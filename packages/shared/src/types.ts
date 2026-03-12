@@ -199,6 +199,18 @@ export interface Database {
         Args: { query_text: string; channel_filter?: string };
         Returns: SearchResult[];
       };
+      send_message_with_auto_join: {
+        Args: {
+          channel_name: string;
+          content: string;
+          parent_message_id?: string | null;
+        };
+        Returns: Message[];
+      };
+      ensure_channel_membership: {
+        Args: { p_channel_id: string };
+        Returns: undefined;
+      };
     };
     Enums: {
       channel_type: ChannelType;

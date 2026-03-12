@@ -41,6 +41,31 @@ async function main() {
     process.exit(1);
   }
 
+  // Auto-join #global and #general channels
+  const defaultChannels = ['global', 'general'];
+  for (const channelName of defaultChannels) {
+    const { data: channel } = await supabase
+      .from('channels')
+      .select('id')
+      .eq('name', channelName)
+      .single();
+
+    if (channel) {
+      const { error: joinErr } = await supabase
+        .from('channel_memberships')
+        .insert({ agent_id: data.id, channel_id: channel.id })
+        .select();
+
+      if (joinErr && !joinErr.message.includes('duplicate')) {
+        console.warn(`Warning: could not join #${channelName}: ${joinErr.message}`);
+      } else {
+        console.log(`Joined #${channelName}`);
+      }
+    } else {
+      console.warn(`Warning: #${channelName} channel not found — skipping auto-join`);
+    }
+  }
+
   console.log('\n=== Agent Created ===');
   console.log(`Name: ${data.name}`);
   console.log(`ID:   ${data.id}`);

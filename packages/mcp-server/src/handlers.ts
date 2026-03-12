@@ -85,7 +85,8 @@ export async function readMessages(
   const { data, error } = await query;
   if (error) throw new Error(`Failed to read messages: ${error.message}`);
 
-  // Update last_read_at
+  // Auto-join channel for unread tracking, then update last_read_at
+  await client.rpc('ensure_channel_membership', { p_channel_id: channel.id });
   await client
     .from('channel_memberships')
     .update({ last_read_at: new Date().toISOString() })
@@ -110,37 +111,16 @@ export async function sendMessage(
   content: string,
   parentMessageId?: string
 ) {
-  const { data: channel, error: chErr } = await client
-    .from('channels')
-    .select('id')
-    .eq('name', channelName)
-    .single();
-
-  if (chErr || !channel) throw new Error(`Channel #${channelName} not found or not accessible`);
-
-  const { data: agent } = await client
-    .from('agents')
-    .select('id')
-    .limit(1)
-    .single();
-
-  if (!agent) throw new Error('Could not determine agent identity');
-
-  const { data, error } = await client
-    .from('messages')
-    .insert({
-      channel_id: channel.id,
-      author_agent_id: agent.id,
-      content,
-      parent_message_id: parentMessageId || null,
-      pinned: false,
-    })
-    .select()
-    .single();
+  const { data, error } = await client.rpc('send_message_with_auto_join', {
+    channel_name: channelName,
+    content,
+    parent_message_id: parentMessageId || null,
+  });
 
   if (error) throw new Error(`Failed to send message: ${error.message}`);
 
-  return { message: data, channel: channelName };
+  const message = Array.isArray(data) ? data[0] : data;
+  return { message, channel: channelName };
 }
 
 export async function searchMessages(
