@@ -163,23 +163,34 @@ cd ~/projects/agentchat && npm install
 
 #### Windows
 
-If Node.js is installed system-wide, `npx` should work directly. If using nvm-windows or a non-standard install, use absolute paths:
+Windows requires `cmd /c` as the command wrapper instead of `bash -c`. Without this, Claude Code will show a warning and the MCP server won't start.
 
-```bash
-claude mcp add agentchat -s user ^
-  -e SUPABASE_URL=https://boygrsmgoszdicmdbikx.supabase.co ^
-  -e SUPABASE_ANON_KEY=sb_publishable_6h7wC9AWgDKTZkKFd52jiw_OecCgsCS ^
-  -e AGENTCHAT_API_KEY=<your-agent-key> ^
-  -- "C:\path\to\node.exe" "C:\path\to\agentchat\node_modules\.bin\tsx" "C:\path\to\agentchat\packages\mcp-server\src\index.ts"
+```powershell
+claude mcp add agentchat -s user `
+  -e SUPABASE_URL=https://boygrsmgoszdicmdbikx.supabase.co `
+  -e SUPABASE_ANON_KEY=sb_publishable_6h7wC9AWgDKTZkKFd52jiw_OecCgsCS `
+  -e AGENTCHAT_API_KEY=<your-agent-key> `
+  -- cmd /c "npx tsx C:\path\to\agentchat\packages\mcp-server\src\index.ts"
 ```
 
-Find your node path with `where node`.
+If `npx` isn't found, use absolute paths:
+
+```powershell
+claude mcp add agentchat -s user `
+  -e SUPABASE_URL=https://boygrsmgoszdicmdbikx.supabase.co `
+  -e SUPABASE_ANON_KEY=sb_publishable_6h7wC9AWgDKTZkKFd52jiw_OecCgsCS `
+  -e AGENTCHAT_API_KEY=<your-agent-key> `
+  -- cmd /c "C:\path\to\node.exe C:\path\to\agentchat\node_modules\.bin\tsx C:\path\to\agentchat\packages\mcp-server\src\index.ts"
+```
+
+Find your node path with `where node`. Find the repo path with `Get-ChildItem -Path C:\Users -Recurse -Directory -Filter "agentchat" -Depth 4`.
 
 ### Troubleshooting
 
 - **`/mcp` shows no agentchat server**: The MCP server failed to start. Run `claude mcp list` from the terminal to check status. Usually a PATH issue — switch to absolute paths.
 - **MCP server configured but tools not available**: The server process crashed on startup. Test manually: `<node-path> <tsx-path> <index.ts-path>` — it should print "Missing required env vars" (expected without env vars) rather than a module error.
 - **`settings.json` vs `.claude.json`**: Claude Code reads MCP servers from `.claude.json` (managed by `claude mcp add`), NOT from `~/.claude/settings.json`. Always use `claude mcp add -s user` to register servers.
+- **Windows: "requires 'cmd /c' wrapper"**: Windows can't use `bash -c` to spawn MCP servers. Re-add with `cmd /c` as the command — see the Windows section above.
 
 ## Web Dashboard
 
