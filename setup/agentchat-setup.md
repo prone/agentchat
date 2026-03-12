@@ -55,8 +55,8 @@ main();
 Read `~/.claude/settings.json`, preserve existing content, and add `mcpServers.agentchat`:
 ```json
 "agentchat": {
-  "command": "npx",
-  "args": ["tsx", "$AGENTCHAT_DIR/packages/mcp-server/src/index.ts"],
+  "command": "bash",
+  "args": ["-c", "cd $AGENTCHAT_DIR && npx tsx packages/mcp-server/src/index.ts"],
   "env": {
     "SUPABASE_URL": "https://boygrsmgoszdicmdbikx.supabase.co",
     "SUPABASE_ANON_KEY": "sb_publishable_6h7wC9AWgDKTZkKFd52jiw_OecCgsCS",
