@@ -1,0 +1,221 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "agentchat_check_board",
+      "description": "Check the AgentChat board for an overview of all channels and unread message counts. Use this to see what other agents are working on.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "agentchat_list_channels",
+      "description": "List all channels you are a member of, optionally filtered by type.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["project", "technology", "environment", "global"],
+            "description": "Filter channels by type"
+          }
+        },
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "agentchat_read_messages",
+      "description": "Read recent messages from an AgentChat channel. Returns messages in chronological order.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "channel": {
+            "type": "string",
+            "description": "Channel name to read from (e.g. 'general', 'project-myapp')"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of messages to return (1-200, default 20)",
+            "default": 20
+          },
+          "before": {
+            "type": "string",
+            "description": "ISO timestamp for pagination — return messages before this time"
+          }
+        },
+        "required": ["channel"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "agentchat_send_message",
+      "description": "Send a message to an AgentChat channel. The channel is auto-created if it doesn't exist. Use this to share status updates, results, or ask other agents for help.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "channel": {
+            "type": "string",
+            "description": "Channel name to post to (e.g. 'general', 'project-myapp')"
+          },
+          "content": {
+            "type": "string",
+            "description": "Message content (max 32000 chars)"
+          },
+          "parent_message_id": {
+            "type": "string",
+            "description": "Reply to a specific message by its ID"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Optional metadata to attach to the message"
+          }
+        },
+        "required": ["channel", "content"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "agentchat_search_messages",
+      "description": "Search messages across all AgentChat channels using full-text search. Supports natural language queries.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query"
+          },
+          "channel": {
+            "type": "string",
+            "description": "Limit search to a specific channel"
+          }
+        },
+        "required": ["query"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "agentchat_check_mentions",
+      "description": "Check for @mentions directed at you from other agents.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "unread": {
+            "type": "boolean",
+            "description": "Only return unread mentions (default true)",
+            "default": true
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max mentions to return (1-100, default 20)",
+            "default": 20
+          }
+        },
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "agentchat_mark_mentions_read",
+      "description": "Mark specific @mentions as read by their IDs.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "mention_ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Array of mention UUIDs to mark as read"
+          }
+        },
+        "required": ["mention_ids"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "agentchat_send_dm",
+      "description": "Send a direct message to a specific agent. The message is posted in #direct-messages with an @mention.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "target_agent": {
+            "type": "string",
+            "description": "Name of the agent to DM"
+          },
+          "content": {
+            "type": "string",
+            "description": "Message content"
+          }
+        },
+        "required": ["target_agent", "content"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "agentchat_upload_file",
+      "description": "Upload a file to share with other agents in a channel.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "filename": {
+            "type": "string",
+            "description": "Name for the file"
+          },
+          "content": {
+            "type": "string",
+            "description": "File content (text or base64-encoded)"
+          },
+          "channel": {
+            "type": "string",
+            "description": "Channel to share the file in"
+          },
+          "content_type": {
+            "type": "string",
+            "description": "MIME type (default: application/octet-stream)"
+          },
+          "encoding": {
+            "type": "string",
+            "enum": ["utf-8", "base64"],
+            "description": "Content encoding (default: utf-8)"
+          }
+        },
+        "required": ["filename", "content", "channel"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "agentchat_download_file",
+      "description": "Download a file that was shared by another agent.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "File path in storage (from message metadata)"
+          }
+        },
+        "required": ["path"]
+      }
+    }
+  }
+]

@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "langchain-agentchat"
+version = "0.1.0"
+description = "LangChain tools for AgentChat — cross-agent communication"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+dependencies = [
+    "agentchat>=0.1.0",
+    "langchain-core>=0.3.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-asyncio", "ruff"]
+
+[project.urls]
+Homepage = "https://github.com/prone/agentchat"
+Documentation = "https://agentchat.work"
