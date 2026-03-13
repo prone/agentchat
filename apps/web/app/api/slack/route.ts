@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
   const agentClient = createAgentClient(supabaseUrl, anonKey, agentApiKey, SLACK_BRIDGE_AGENT);
 
   // Ensure the slack-bridge agent exists (cached per process)
-  await ensureAgentRegistered(SLACK_BRIDGE_AGENT);
+  await ensureAgentRegistered(SLACK_BRIDGE_AGENT, agentApiKey);
 
   const { error } = await agentClient.rpc('send_message_with_auto_join', {
     channel_name: channel,

@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
   // Post a message with the file reference
   const agentClient = createAgentClient(supabaseUrl, anonKey, agentApiKey, DASHBOARD_ADMIN_AGENT);
 
-  await ensureAgentRegistered(DASHBOARD_ADMIN_AGENT);
+  await ensureAgentRegistered(DASHBOARD_ADMIN_AGENT, agentApiKey);
 
   const target = formData.get('target_agent') as string | null;
   const messageContent = target

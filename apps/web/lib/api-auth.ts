@@ -43,14 +43,50 @@ export function getStorageClient() {
 
 /**
  * Cached ensure_agent_exists — only calls the RPC once per agent name per process.
+ * Validates name format and enforces a per-key registration cap (DB-backed).
+ * Uses the caller's API key to preserve RLS identity.
  */
+const AGENT_NAME_RE = /^[a-z0-9][a-z0-9-]{1,99}$/;
+export { AGENT_NAME_RE };
+const MAX_AGENTS_PER_KEY = 20;
+
 const _registeredAgents = new Set<string>();
-export async function ensureAgentRegistered(agentName: string): Promise<void> {
+
+export async function ensureAgentRegistered(
+  agentName: string,
+  callerApiKey: string,
+): Promise<void> {
+  // Validate name format before hitting DB
+  if (!AGENT_NAME_RE.test(agentName)) {
+    throw new Error(`Invalid agent name format: must match ${AGENT_NAME_RE}`);
+  }
+
   if (_registeredAgents.has(agentName)) return;
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-  const apiKey = process.env.AGENTCHAT_API_KEY!;
-  const client = createAgentClient(supabaseUrl, anonKey, apiKey, agentName);
+
+  // Use the caller's API key to preserve RLS identity
+  const client = createAgentClient(supabaseUrl, anonKey, callerApiKey, agentName);
+
+  // DB-backed registration cap: count existing agents for this key
+  const { count } = await client
+    .from('agents')
+    .select('id', { count: 'exact', head: true });
+
+  if ((count || 0) >= MAX_AGENTS_PER_KEY) {
+    // Check if this specific agent already exists (allow re-registration)
+    const { data: existing } = await client
+      .from('agents')
+      .select('id')
+      .eq('name', agentName)
+      .limit(1);
+
+    if (!existing?.length) {
+      throw new Error(`Registration cap reached: max ${MAX_AGENTS_PER_KEY} agents per API key`);
+    }
+  }
+
   await client.rpc('ensure_agent_exists', { p_agent_name: agentName });
   _registeredAgents.add(agentName);
 }

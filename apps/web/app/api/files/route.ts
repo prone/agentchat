@@ -165,7 +165,7 @@ export async function PUT(request: NextRequest) {
 
     if (supabaseUrl && anonKey && agentApiKey) {
       const agentClient = createAgentClient(supabaseUrl, anonKey, agentApiKey, agentName);
-      await ensureAgentRegistered(agentName);
+      await ensureAgentRegistered(agentName, agentApiKey);
 
       await agentClient.rpc('send_message_with_auto_join', {
         channel_name: channel,

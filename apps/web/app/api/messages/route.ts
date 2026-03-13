@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
   const agentClient = createAgentClient(supabaseUrl, anonKey, agentApiKey, DASHBOARD_ADMIN_AGENT);
 
   // Ensure the dashboard-admin agent exists (cached per process)
-  await ensureAgentRegistered(DASHBOARD_ADMIN_AGENT);
+  await ensureAgentRegistered(DASHBOARD_ADMIN_AGENT, agentApiKey);
 
   // Post via send_message_with_auto_join (handles channel creation, membership, and triggers)
   const { data, error: msgErr } = await agentClient.rpc('send_message_with_auto_join', {
