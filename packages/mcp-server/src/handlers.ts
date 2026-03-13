@@ -1,5 +1,5 @@
-import type { AgentChatClient, ChannelMembershipWithChannel } from '@agentchat/shared';
-import { DIRECT_MESSAGES_CHANNEL, fetchBoardSummary, fetchChannelMessages, markChannelRead, searchChannelMessages } from '@agentchat/shared';
+import type { AirChatClient, ChannelMembershipWithChannel } from '@airchat/shared';
+import { DIRECT_MESSAGES_CHANNEL, fetchBoardSummary, fetchChannelMessages, markChannelRead, searchChannelMessages } from '@airchat/shared';
 import { sanitizeError, getProjectName } from './utils.js';
 
 function getMessageMetadata(): Record<string, unknown> {
@@ -7,7 +7,7 @@ function getMessageMetadata(): Record<string, unknown> {
   return project ? { project } : {};
 }
 
-export async function checkBoard(client: AgentChatClient) {
+export async function checkBoard(client: AirChatClient) {
   try {
     const channels = await fetchBoardSummary(client);
     return { channels };
@@ -16,7 +16,7 @@ export async function checkBoard(client: AgentChatClient) {
   }
 }
 
-export async function listChannels(client: AgentChatClient, type?: string) {
+export async function listChannels(client: AirChatClient, type?: string) {
   const { data, error } = await client
     .from('channel_memberships')
     .select('role, channels(*)');
@@ -35,7 +35,7 @@ export async function listChannels(client: AgentChatClient, type?: string) {
 }
 
 export async function readMessages(
-  client: AgentChatClient,
+  client: AirChatClient,
   channelName: string,
   limit: number = 20,
   before?: string
@@ -52,7 +52,7 @@ export async function readMessages(
 }
 
 export async function sendMessage(
-  client: AgentChatClient,
+  client: AirChatClient,
   channelName: string,
   content: string,
   parentMessageId?: string
@@ -73,7 +73,7 @@ export async function sendMessage(
 }
 
 export async function searchMessages(
-  client: AgentChatClient,
+  client: AirChatClient,
   queryText: string,
   channelName?: string
 ) {
@@ -82,7 +82,7 @@ export async function searchMessages(
 }
 
 export async function checkMentions(
-  client: AgentChatClient,
+  client: AirChatClient,
   onlyUnread: boolean = true,
   limit: number = 20
 ) {
@@ -119,7 +119,7 @@ export async function checkMentions(
 }
 
 export async function markMentionsRead(
-  client: AgentChatClient,
+  client: AirChatClient,
   mentionIds: string[]
 ) {
   const { error } = await client.rpc('mark_mentions_read', {
@@ -132,7 +132,7 @@ export async function markMentionsRead(
 }
 
 export async function sendDirectMessage(
-  client: AgentChatClient,
+  client: AirChatClient,
   targetAgentName: string,
   content: string
 ) {
@@ -155,7 +155,7 @@ export async function sendDirectMessage(
 }
 
 export async function uploadFile(
-  _client: AgentChatClient,
+  _client: AirChatClient,
   filename: string,
   content: string,
   channel: string,
@@ -206,14 +206,14 @@ export function setFileApiConfig(config: FileApiConfig): void {
 
 function getFileApiBase(): string {
   if (!_fileApiConfig?.webUrl) {
-    throw new Error('AGENTCHAT_WEB_URL is not configured. Set it in ~/.agentchat/config or as an environment variable.');
+    throw new Error('AIRCHAT_WEB_URL is not configured. Set it in ~/.airchat/config or as an environment variable.');
   }
   return _fileApiConfig.webUrl;
 }
 
 function getAgentHeaders(): Record<string, string> {
   if (!_fileApiConfig?.apiKey) {
-    throw new Error('AGENTCHAT_API_KEY is not configured.');
+    throw new Error('AIRCHAT_API_KEY is not configured.');
   }
   const headers: Record<string, string> = { 'x-agent-api-key': _fileApiConfig.apiKey };
   if (_fileApiConfig.agentName) headers['x-agent-name'] = _fileApiConfig.agentName;
@@ -221,7 +221,7 @@ function getAgentHeaders(): Record<string, string> {
 }
 
 export async function getFileUrl(
-  _client: AgentChatClient,
+  _client: AirChatClient,
   filePath: string
 ) {
   const base = getFileApiBase();
@@ -252,7 +252,7 @@ export type DownloadResult =
   | { path: string; type: string; size: number; content_base64: string; content?: undefined };
 
 export async function downloadFile(
-  _client: AgentChatClient,
+  _client: AirChatClient,
   filePath: string
 ): Promise<DownloadResult> {
   const ext = filePath.split('.').pop()?.toLowerCase() || '';

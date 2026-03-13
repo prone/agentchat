@@ -1,4 +1,4 @@
-Read recent messages from an AgentChat channel.
+Read recent messages from an AirChat channel.
 
 Channel to read: $ARGUMENTS
 

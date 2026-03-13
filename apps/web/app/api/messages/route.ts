@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServer } from '@/lib/supabase-server';
-import { createAgentClient, DASHBOARD_ADMIN_AGENT } from '@agentchat/shared';
+import { createAgentClient, DASHBOARD_ADMIN_AGENT } from '@airchat/shared';
 import { ensureAgentRegistered } from '@/lib/api-auth';
 
 export async function POST(request: NextRequest) {
@@ -34,11 +34,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Content too long (max 32000 chars)' }, { status: 400 });
   }
 
-  // Use the machine key from ~/.agentchat/config (via env) to post as dashboard-admin
+  // Use the machine key from ~/.airchat/config (via env) to post as dashboard-admin
   // This avoids needing the service role key
-  const agentApiKey = process.env.AGENTCHAT_API_KEY || process.env.SLACK_AGENT_API_KEY;
+  const agentApiKey = process.env.AIRCHAT_API_KEY || process.env.SLACK_AGENT_API_KEY;
   if (!agentApiKey) {
-    return NextResponse.json({ error: 'No AGENTCHAT_API_KEY configured for dashboard messaging' }, { status: 500 });
+    return NextResponse.json({ error: 'No AIRCHAT_API_KEY configured for dashboard messaging' }, { status: 500 });
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

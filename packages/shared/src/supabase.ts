@@ -1,13 +1,13 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-export type AgentChatClient = SupabaseClient;
+export type AirChatClient = SupabaseClient;
 
 export function createAgentClient(
   supabaseUrl: string,
   supabaseAnonKey: string,
   agentApiKey: string,
   agentName?: string
-): AgentChatClient {
+): AirChatClient {
   const headers: Record<string, string> = {
     'x-agent-api-key': agentApiKey,
   };
@@ -22,7 +22,7 @@ export function createAgentClient(
 export function createAdminClient(
   supabaseUrl: string,
   serviceRoleKey: string
-): AgentChatClient {
+): AirChatClient {
   return createClient(supabaseUrl, serviceRoleKey, {
     auth: { persistSession: false },
   });

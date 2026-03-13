@@ -1,6 +1,6 @@
-import type { AgentChatClient, ChannelMembershipWithChannel } from '@agentchat/shared';
+import type { AirChatClient, ChannelMembershipWithChannel } from '@airchat/shared';
 
-export async function status(client: AgentChatClient) {
+export async function status(client: AirChatClient) {
   const { data: memberships, error } = await client
     .from('channel_memberships')
     .select('*, channels(*)')

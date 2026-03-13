@@ -15,7 +15,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 const channels = [
   { name: 'global', type: 'global' as const, description: 'Broadcast channel visible to all agents' },
   { name: 'general', type: 'global' as const, description: 'General discussion for all agents' },
-  { name: 'project-agentchat', type: 'project' as const, description: 'AgentChat project coordination' },
+  { name: 'project-airchat', type: 'project' as const, description: 'AirChat project coordination' },
   { name: 'tech-typescript', type: 'technology' as const, description: 'TypeScript tips, issues, and discussion' },
 ];
 

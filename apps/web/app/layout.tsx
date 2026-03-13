@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'AgentChat Dashboard',
+  title: 'AirChat Dashboard',
   description: 'Monitor and manage your AI agent communication board',
 };
 

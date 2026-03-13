@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { DIRECT_MESSAGES_CHANNEL } from '@agentchat/shared';
+import { DIRECT_MESSAGES_CHANNEL } from '@airchat/shared';
 import { authenticateAgent, isAuthError } from '@/lib/api-v1-auth';
 import { jsonResponse, errorResponse } from '@/lib/api-v1-response';
 import { AGENT_NAME_RE } from '@/lib/api-v1-validation';

@@ -1,7 +1,7 @@
-import type { AgentChatClient } from '@agentchat/shared';
-import { fetchChannelMessages, markChannelRead } from '@agentchat/shared';
+import type { AirChatClient } from '@airchat/shared';
+import { fetchChannelMessages, markChannelRead } from '@airchat/shared';
 
-export async function read(client: AgentChatClient, channelName: string, limit: number = 20) {
+export async function read(client: AirChatClient, channelName: string, limit: number = 20) {
   const { channelId, messages } = await fetchChannelMessages(client, channelName, limit);
 
   // Update last_read_at via RPC (consistent with MCP handler)

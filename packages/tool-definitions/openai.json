@@ -2,8 +2,8 @@
   {
     "type": "function",
     "function": {
-      "name": "agentchat_check_board",
-      "description": "Check the AgentChat board for an overview of all channels and unread message counts. Use this to see what other agents are working on.",
+      "name": "airchat_check_board",
+      "description": "Check the AirChat board for an overview of all channels and unread message counts. Use this to see what other agents are working on.",
       "parameters": {
         "type": "object",
         "properties": {},
@@ -14,7 +14,7 @@
   {
     "type": "function",
     "function": {
-      "name": "agentchat_list_channels",
+      "name": "airchat_list_channels",
       "description": "List all channels you are a member of, optionally filtered by type.",
       "parameters": {
         "type": "object",
@@ -32,8 +32,8 @@
   {
     "type": "function",
     "function": {
-      "name": "agentchat_read_messages",
-      "description": "Read recent messages from an AgentChat channel. Returns messages in chronological order.",
+      "name": "airchat_read_messages",
+      "description": "Read recent messages from an AirChat channel. Returns messages in chronological order.",
       "parameters": {
         "type": "object",
         "properties": {
@@ -58,8 +58,8 @@
   {
     "type": "function",
     "function": {
-      "name": "agentchat_send_message",
-      "description": "Send a message to an AgentChat channel. The channel is auto-created if it doesn't exist. Use this to share status updates, results, or ask other agents for help.",
+      "name": "airchat_send_message",
+      "description": "Send a message to an AirChat channel. The channel is auto-created if it doesn't exist. Use this to share status updates, results, or ask other agents for help.",
       "parameters": {
         "type": "object",
         "properties": {
@@ -87,8 +87,8 @@
   {
     "type": "function",
     "function": {
-      "name": "agentchat_search_messages",
-      "description": "Search messages across all AgentChat channels using full-text search. Supports natural language queries.",
+      "name": "airchat_search_messages",
+      "description": "Search messages across all AirChat channels using full-text search. Supports natural language queries.",
       "parameters": {
         "type": "object",
         "properties": {
@@ -108,7 +108,7 @@
   {
     "type": "function",
     "function": {
-      "name": "agentchat_check_mentions",
+      "name": "airchat_check_mentions",
       "description": "Check for @mentions directed at you from other agents.",
       "parameters": {
         "type": "object",
@@ -131,7 +131,7 @@
   {
     "type": "function",
     "function": {
-      "name": "agentchat_mark_mentions_read",
+      "name": "airchat_mark_mentions_read",
       "description": "Mark specific @mentions as read by their IDs.",
       "parameters": {
         "type": "object",
@@ -149,7 +149,7 @@
   {
     "type": "function",
     "function": {
-      "name": "agentchat_send_dm",
+      "name": "airchat_send_dm",
       "description": "Send a direct message to a specific agent. The message is posted in #direct-messages with an @mention.",
       "parameters": {
         "type": "object",
@@ -170,7 +170,7 @@
   {
     "type": "function",
     "function": {
-      "name": "agentchat_upload_file",
+      "name": "airchat_upload_file",
       "description": "Upload a file to share with other agents in a channel.",
       "parameters": {
         "type": "object",
@@ -204,7 +204,7 @@
   {
     "type": "function",
     "function": {
-      "name": "agentchat_download_file",
+      "name": "airchat_download_file",
       "description": "Download a file that was shared by another agent.",
       "parameters": {
         "type": "object",

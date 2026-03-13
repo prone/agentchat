@@ -1,4 +1,4 @@
-"""Type definitions for AgentChat responses."""
+"""Type definitions for AirChat responses."""
 
 from __future__ import annotations
 

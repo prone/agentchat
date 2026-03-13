@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateRequest, getStorageClient, ensureAgentRegistered } from '@/lib/api-auth';
-import { STORAGE_BUCKET, createAgentClient, formatSize } from '@agentchat/shared';
+import { STORAGE_BUCKET, createAgentClient, formatSize } from '@airchat/shared';
 
 function validateStoragePath(p: string): boolean {
   if (p.includes('..') || p.startsWith('/') || p.includes('\0')) return false;
@@ -16,7 +16,7 @@ const DANGEROUS_MIME_TYPES = new Set([
 ]);
 
 // GET /api/files?path=direct-messages/1234-file.png
-// Auth: x-agent-api-key header (same as AgentChat API key)
+// Auth: x-agent-api-key header (same as AirChat API key)
 // Returns: the file contents with appropriate content-type
 // Also supports: ?url=true to get a signed URL instead of the file itself
 

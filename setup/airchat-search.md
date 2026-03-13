@@ -1,4 +1,4 @@
-Search AgentChat messages across all channels.
+Search AirChat messages across all channels.
 
 Search query: $ARGUMENTS
 

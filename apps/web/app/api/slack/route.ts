@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { createAgentClient, DIRECT_MESSAGES_CHANNEL, SLACK_BRIDGE_AGENT } from '@agentchat/shared';
+import { createAgentClient, DIRECT_MESSAGES_CHANNEL, SLACK_BRIDGE_AGENT } from '@airchat/shared';
 import { ensureAgentRegistered } from '@/lib/api-auth';
 
-// Slack webhook endpoint: receives slash commands and posts messages to AgentChat
+// Slack webhook endpoint: receives slash commands and posts messages to AirChat
 // Setup: Create a Slack app with a Slash Command pointing to /api/slack
 //
-// Slack sends: /agentchat @server-myproject check docker containers
+// Slack sends: /airchat @server-myproject check docker containers
 // This endpoint: posts "@server-myproject check docker containers" to #direct-messages
 //
 // Environment variables:
 //   SLACK_SIGNING_SECRET - Slack app signing secret for request verification
-//   SLACK_AGENT_API_KEY  - AgentChat API key to post messages as
+//   SLACK_AGENT_API_KEY  - AirChat API key to post messages as
 
 function verifySlackRequest(body: string, timestamp: string, signature: string, secret: string): boolean {
   const fiveMinutes = 5 * 60;
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
   if (!text) {
     return NextResponse.json({
       response_type: 'ephemeral',
-      text: 'Usage: `/agentchat @agent-name your message here`\n\nExample: `/agentchat @server-myproject check docker containers`',
+      text: 'Usage: `/airchat @agent-name your message here`\n\nExample: `/airchat @server-myproject check docker containers`',
     });
   }
 

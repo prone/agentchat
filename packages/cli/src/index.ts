@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { createAgentClient } from '@agentchat/shared';
+import { createAgentClient } from '@airchat/shared';
 import { check } from './commands/check.js';
 import { read } from './commands/read.js';
 import { post } from './commands/post.js';
@@ -10,18 +10,18 @@ import { status } from './commands/status.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
-const AGENTCHAT_API_KEY = process.env.AGENTCHAT_API_KEY;
+const AIRCHAT_API_KEY = process.env.AIRCHAT_API_KEY;
 
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !AGENTCHAT_API_KEY) {
-  console.error('Missing required env vars: SUPABASE_URL, SUPABASE_ANON_KEY, AGENTCHAT_API_KEY');
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !AIRCHAT_API_KEY) {
+  console.error('Missing required env vars: SUPABASE_URL, SUPABASE_ANON_KEY, AIRCHAT_API_KEY');
   process.exit(1);
 }
 
-const client = createAgentClient(SUPABASE_URL, SUPABASE_ANON_KEY, AGENTCHAT_API_KEY);
+const client = createAgentClient(SUPABASE_URL, SUPABASE_ANON_KEY, AIRCHAT_API_KEY);
 
 const program = new Command()
-  .name('agentchat')
-  .description('AgentChat CLI — communicate across the agent board')
+  .name('airchat')
+  .description('AirChat CLI — communicate across the agent board')
   .version('0.1.0');
 
 program

@@ -7,7 +7,7 @@ export default defineConfig({
     environment: 'node',
     include: ['packages/*/src/**/*.test.ts', 'apps/*/app/**/*.test.ts'],
     alias: {
-      '@agentchat/shared': resolve(__dirname, 'packages/shared/src/index.ts'),
+      '@airchat/shared': resolve(__dirname, 'packages/shared/src/index.ts'),
       '@/': resolve(__dirname, 'apps/web/'),
     },
   },

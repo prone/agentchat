@@ -1,4 +1,4 @@
-"""LangChain tool wrappers for AgentChat operations."""
+"""LangChain tool wrappers for AirChat operations."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from typing import Any, Optional
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel, ConfigDict, Field
 
-from agentchat import AgentChatClient
+from airchat import AirChatClient
 
 
 # ── Input schemas ────────────────────────────────────────────────
@@ -66,18 +66,18 @@ class DownloadFileInput(BaseModel):
 # ── Tools ────────────────────────────────────────────────────────
 
 
-class _AgentChatBaseTool(BaseTool):
-    """Base class that holds a shared AgentChatClient."""
+class _AirChatBaseTool(BaseTool):
+    """Base class that holds a shared AirChatClient."""
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    client: AgentChatClient
+    client: AirChatClient
 
 
-class CheckBoardTool(_AgentChatBaseTool):
-    name: str = "agentchat_check_board"
+class CheckBoardTool(_AirChatBaseTool):
+    name: str = "airchat_check_board"
     description: str = (
-        "Check the AgentChat board for an overview of all channels "
+        "Check the AirChat board for an overview of all channels "
         "and unread message counts. Use this to see what's happening."
     )
 
@@ -97,8 +97,8 @@ class CheckBoardTool(_AgentChatBaseTool):
         return "\n".join(lines)
 
 
-class ListChannelsTool(_AgentChatBaseTool):
-    name: str = "agentchat_list_channels"
+class ListChannelsTool(_AirChatBaseTool):
+    name: str = "airchat_list_channels"
     description: str = (
         "List channels the agent is a member of. "
         "Optionally filter by type: project, technology, environment, or global."
@@ -116,10 +116,10 @@ class ListChannelsTool(_AgentChatBaseTool):
         return "\n".join(lines)
 
 
-class ReadMessagesTool(_AgentChatBaseTool):
-    name: str = "agentchat_read_messages"
+class ReadMessagesTool(_AirChatBaseTool):
+    name: str = "airchat_read_messages"
     description: str = (
-        "Read recent messages from an AgentChat channel. "
+        "Read recent messages from an AirChat channel. "
         "Returns messages in chronological order."
     )
     args_schema: type[BaseModel] = ReadMessagesInput
@@ -135,10 +135,10 @@ class ReadMessagesTool(_AgentChatBaseTool):
         return "\n".join(lines)
 
 
-class SendMessageTool(_AgentChatBaseTool):
-    name: str = "agentchat_send_message"
+class SendMessageTool(_AirChatBaseTool):
+    name: str = "airchat_send_message"
     description: str = (
-        "Send a message to an AgentChat channel. "
+        "Send a message to an AirChat channel. "
         "The channel is auto-created if it doesn't exist."
     )
     args_schema: type[BaseModel] = SendMessageInput
@@ -155,10 +155,10 @@ class SendMessageTool(_AgentChatBaseTool):
         return f"Message sent to #{channel} (id: {msg.id})"
 
 
-class SearchMessagesTool(_AgentChatBaseTool):
-    name: str = "agentchat_search_messages"
+class SearchMessagesTool(_AirChatBaseTool):
+    name: str = "airchat_search_messages"
     description: str = (
-        "Search messages across AgentChat channels using full-text search. "
+        "Search messages across AirChat channels using full-text search. "
         "Supports natural language queries."
     )
     args_schema: type[BaseModel] = SearchMessagesInput
@@ -175,8 +175,8 @@ class SearchMessagesTool(_AgentChatBaseTool):
         return "\n".join(lines)
 
 
-class CheckMentionsTool(_AgentChatBaseTool):
-    name: str = "agentchat_check_mentions"
+class CheckMentionsTool(_AirChatBaseTool):
+    name: str = "airchat_check_mentions"
     description: str = (
         "Check for @mentions directed at this agent from other agents."
     )
@@ -196,8 +196,8 @@ class CheckMentionsTool(_AgentChatBaseTool):
         return "\n".join(lines)
 
 
-class MarkMentionsReadTool(_AgentChatBaseTool):
-    name: str = "agentchat_mark_mentions_read"
+class MarkMentionsReadTool(_AirChatBaseTool):
+    name: str = "airchat_mark_mentions_read"
     description: str = "Mark specific mentions as read by their IDs."
     args_schema: type[BaseModel] = MarkMentionsReadInput
 
@@ -206,8 +206,8 @@ class MarkMentionsReadTool(_AgentChatBaseTool):
         return f"Marked {count} mention(s) as read."
 
 
-class SendDirectMessageTool(_AgentChatBaseTool):
-    name: str = "agentchat_send_direct_message"
+class SendDirectMessageTool(_AirChatBaseTool):
+    name: str = "airchat_send_direct_message"
     description: str = (
         "Send a direct message to a specific agent. "
         "The message is posted in #direct-messages with an @mention."
@@ -219,8 +219,8 @@ class SendDirectMessageTool(_AgentChatBaseTool):
         return f"DM sent to @{target_agent} (id: {msg.id})"
 
 
-class UploadFileTool(_AgentChatBaseTool):
-    name: str = "agentchat_upload_file"
+class UploadFileTool(_AirChatBaseTool):
+    name: str = "airchat_upload_file"
     description: str = (
         "Upload a file to share with other agents in a channel."
     )
@@ -231,8 +231,8 @@ class UploadFileTool(_AgentChatBaseTool):
         return f"File uploaded: {info.path}"
 
 
-class DownloadFileTool(_AgentChatBaseTool):
-    name: str = "agentchat_download_file"
+class DownloadFileTool(_AirChatBaseTool):
+    name: str = "airchat_download_file"
     description: str = "Download a file shared by another agent."
     args_schema: type[BaseModel] = DownloadFileInput
 

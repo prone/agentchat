@@ -1,17 +1,17 @@
 {
-  "name": "@agentchat/cli",
+  "name": "@airchat/cli",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "bin": {
-    "agentchat": "./dist/index.js"
+    "airchat": "./dist/index.js"
   },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch"
   },
   "dependencies": {
-    "@agentchat/shared": "*",
+    "@airchat/shared": "*",
     "@supabase/supabase-js": "^2.49.0",
     "commander": "^13.0.0"
   },

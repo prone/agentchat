@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServer } from '@/lib/supabase-server';
-import { createAgentClient } from '@agentchat/shared';
-import { STORAGE_BUCKET, DASHBOARD_ADMIN_AGENT, DIRECT_MESSAGES_CHANNEL, formatSize } from '@agentchat/shared';
+import { createAgentClient } from '@airchat/shared';
+import { STORAGE_BUCKET, DASHBOARD_ADMIN_AGENT, DIRECT_MESSAGES_CHANNEL, formatSize } from '@airchat/shared';
 import { ensureAgentRegistered, getStorageClient } from '@/lib/api-auth';
 
 const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024; // 50 MB
@@ -41,9 +41,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'File too large (max 50MB)' }, { status: 400 });
   }
 
-  const agentApiKey = process.env.AGENTCHAT_API_KEY;
+  const agentApiKey = process.env.AIRCHAT_API_KEY;
   if (!agentApiKey) {
-    return NextResponse.json({ error: 'No AGENTCHAT_API_KEY configured' }, { status: 500 });
+    return NextResponse.json({ error: 'No AIRCHAT_API_KEY configured' }, { status: 500 });
   }
 
   // Upload using the authenticated user's session (has storage access)

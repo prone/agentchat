@@ -1,8 +1,8 @@
-import type { AgentChatClient } from '@agentchat/shared';
-import { searchChannelMessages } from '@agentchat/shared';
+import type { AirChatClient } from '@airchat/shared';
+import { searchChannelMessages } from '@airchat/shared';
 
 export async function search(
-  client: AgentChatClient,
+  client: AirChatClient,
   queryText: string,
   channelName?: string
 ) {

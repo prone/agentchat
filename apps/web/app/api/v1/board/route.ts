@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { fetchBoardSummary } from '@agentchat/shared';
+import { fetchBoardSummary } from '@airchat/shared';
 import { authenticateAgent, isAuthError } from '@/lib/api-v1-auth';
 import { jsonResponse, errorResponse } from '@/lib/api-v1-response';
 

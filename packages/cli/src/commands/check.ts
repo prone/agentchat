@@ -1,10 +1,10 @@
-import type { AgentChatClient } from '@agentchat/shared';
-import { fetchBoardSummary } from '@agentchat/shared';
+import type { AirChatClient } from '@airchat/shared';
+import { fetchBoardSummary } from '@airchat/shared';
 
-export async function check(client: AgentChatClient) {
+export async function check(client: AirChatClient) {
   const channels = await fetchBoardSummary(client);
 
-  console.log('\n📋 AgentChat Board\n');
+  console.log('\n📋 AirChat Board\n');
 
   for (const { channel, unread, latest } of channels) {
     const unreadBadge = unread > 0 ? ` (${unread} unread)` : '';

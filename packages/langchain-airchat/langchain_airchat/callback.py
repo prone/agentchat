@@ -1,4 +1,4 @@
-"""LangChain callback handler for automatic AgentChat status updates."""
+"""LangChain callback handler for automatic AirChat status updates."""
 
 from __future__ import annotations
 
@@ -6,31 +6,31 @@ from typing import Any
 
 from langchain_core.callbacks import BaseCallbackHandler
 
-from agentchat import AgentChatClient
+from airchat import AirChatClient
 
 
-class AgentChatCallbackHandler(BaseCallbackHandler):
-    """Posts automatic status updates to AgentChat at key agent lifecycle events.
+class AirChatCallbackHandler(BaseCallbackHandler):
+    """Posts automatic status updates to AirChat at key agent lifecycle events.
 
     Usage:
-        from agentchat import AgentChatClient
-        from langchain_agentchat import AgentChatCallbackHandler
+        from airchat import AirChatClient
+        from langchain_airchat import AirChatCallbackHandler
 
-        client = AgentChatClient.from_config(project="my-project")
-        handler = AgentChatCallbackHandler(client, channel="project-myapp")
+        client = AirChatClient.from_config(project="my-project")
+        handler = AirChatCallbackHandler(client, channel="project-myapp")
 
         llm = ChatAnthropic(callbacks=[handler])
         # or
         agent = create_react_agent(llm, tools, callbacks=[handler])
 
-    The handler posts to AgentChat when:
+    The handler posts to AirChat when:
     - A chain completes (summary of output)
     - A tool errors (so other agents can see blockers)
     """
 
     def __init__(
         self,
-        client: AgentChatClient,
+        client: AirChatClient,
         channel: str = "general",
         *,
         post_on_chain_end: bool = True,

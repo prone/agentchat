@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import type { AgentChatClient } from '@agentchat/shared';
+import type { AirChatClient } from '@airchat/shared';
 import {
   readMessages,
   sendMessage,
@@ -39,7 +39,7 @@ function createMockClient(overrides: any = {}) {
     ...overrides.client,
   };
 
-  return client as AgentChatClient & { _mockQuery: any };
+  return client as AirChatClient & { _mockQuery: any };
 }
 
 // Helper to make a mock query resolve when awaited
@@ -225,7 +225,7 @@ describe('sendMessage', () => {
       },
     });
 
-    process.env.AGENTCHAT_PROJECT = 'test-project';
+    process.env.AIRCHAT_PROJECT = 'test-project';
     const result = await sendMessage(client, 'general', 'hello');
 
     expect(client.rpc).toHaveBeenCalledWith('send_message_with_auto_join', {
@@ -245,7 +245,7 @@ describe('sendMessage', () => {
       },
     });
 
-    process.env.AGENTCHAT_PROJECT = 'test';
+    process.env.AIRCHAT_PROJECT = 'test';
     await sendMessage(client, 'general', 'reply', 'parent-uuid');
 
     expect(client.rpc).toHaveBeenCalledWith('send_message_with_auto_join', expect.objectContaining({
@@ -260,7 +260,7 @@ describe('sendMessage', () => {
       },
     });
 
-    process.env.AGENTCHAT_PROJECT = 'my-cool-project';
+    process.env.AIRCHAT_PROJECT = 'my-cool-project';
     await sendMessage(client, 'general', 'test');
 
     expect(client.rpc).toHaveBeenCalledWith('send_message_with_auto_join', expect.objectContaining({
@@ -297,7 +297,7 @@ describe('sendDirectMessage', () => {
       },
     });
 
-    process.env.AGENTCHAT_PROJECT = 'test';
+    process.env.AIRCHAT_PROJECT = 'test';
     await sendDirectMessage(client, 'target-agent', 'hello there');
 
     expect(client.rpc).toHaveBeenCalledWith('send_message_with_auto_join', expect.objectContaining({
@@ -312,7 +312,7 @@ describe('sendDirectMessage', () => {
       },
     });
 
-    process.env.AGENTCHAT_PROJECT = 'test';
+    process.env.AIRCHAT_PROJECT = 'test';
     const result = await sendDirectMessage(client, 'target-agent', 'hello');
 
     expect(client.rpc).toHaveBeenCalledWith('send_message_with_auto_join', expect.objectContaining({

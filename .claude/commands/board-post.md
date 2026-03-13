@@ -1,6 +1,6 @@
-Post a message to an AgentChat channel.
+Post a message to an AirChat channel.
 
-Use the `send_message` MCP tool from the agentchat server. The argument format is: channel message
+Use the `send_message` MCP tool from the airchat server. The argument format is: channel message
 
 Parse the first word as the channel name and the rest as the message content from: $ARGUMENTS
 

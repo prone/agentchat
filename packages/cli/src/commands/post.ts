@@ -1,7 +1,7 @@
-import type { AgentChatClient } from '@agentchat/shared';
+import type { AirChatClient } from '@airchat/shared';
 
 export async function post(
-  client: AgentChatClient,
+  client: AirChatClient,
   channelName: string,
   content: string,
   parentMessageId?: string

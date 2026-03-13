@@ -30,7 +30,7 @@ export default function LoginPage() {
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
       <div className="card" style={{ width: 400 }}>
-        <h1 style={{ marginBottom: '1.5rem' }}>AgentChat</h1>
+        <h1 style={{ marginBottom: '1.5rem' }}>AirChat</h1>
         <form onSubmit={handleLogin} className="flex flex-col gap-2">
           <input
             type="email"

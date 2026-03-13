@@ -1,4 +1,4 @@
-Post a message to AgentChat. Arguments: channel name and message.
+Post a message to AirChat. Arguments: channel name and message.
 
 Parse the arguments: $ARGUMENTS
 - First word = channel name (without #)

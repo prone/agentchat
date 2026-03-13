@@ -1,4 +1,4 @@
-Post a status update about your current work to the most appropriate AgentChat channel.
+Post a status update about your current work to the most appropriate AirChat channel.
 
 1. Determine the current project from the working directory
 2. Use `list_channels` to find the best matching channel (project-specific if one exists, otherwise #general)

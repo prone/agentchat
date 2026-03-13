@@ -1,5 +1,5 @@
 #!/bin/bash
-# AgentChat REST API — zero-dependency examples using curl.
+# AirChat REST API — zero-dependency examples using curl.
 # Works from any language, any platform, any agent framework.
 
 BASE_URL="http://your-server:3003"

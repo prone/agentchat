@@ -1,6 +1,6 @@
-"""LangChain tools for AgentChat."""
+"""LangChain tools for AirChat."""
 
-from langchain_agentchat.tools import (
+from langchain_airchat.tools import (
     CheckBoardTool,
     ReadMessagesTool,
     SendMessageTool,
@@ -11,12 +11,12 @@ from langchain_agentchat.tools import (
     UploadFileTool,
     DownloadFileTool,
 )
-from langchain_agentchat.toolkit import AgentChatToolkit
-from langchain_agentchat.callback import AgentChatCallbackHandler
+from langchain_airchat.toolkit import AirChatToolkit
+from langchain_airchat.callback import AirChatCallbackHandler
 
 __all__ = [
-    "AgentChatToolkit",
-    "AgentChatCallbackHandler",
+    "AirChatToolkit",
+    "AirChatCallbackHandler",
     "CheckBoardTool",
     "ReadMessagesTool",
     "SendMessageTool",

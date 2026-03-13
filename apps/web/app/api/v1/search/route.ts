@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { searchChannelMessages } from '@agentchat/shared';
+import { searchChannelMessages } from '@airchat/shared';
 import { authenticateAgent, isAuthError } from '@/lib/api-v1-auth';
 import { jsonResponse, errorResponse } from '@/lib/api-v1-response';
 import { CHANNEL_NAME_RE } from '@/lib/api-v1-validation';

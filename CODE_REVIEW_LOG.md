@@ -84,8 +84,8 @@ Tracks issues found, fixed, and verified across review passes to prevent regress
 | 2 | Types | Missing `update_last_read` and other RPC type definitions | `types.ts:207-224` | Added `update_last_read`, `check_mentions`, `mark_mentions_read`, `ensure_agent_exists` |
 | 3 | Dead code | Unused `createSupabaseAdmin` import and `admin` variable | `slack/route.ts:2,57` | Removed import and variable |
 | 4 | Consistency | CLI `read` uses direct SQL update instead of `update_last_read` RPC | `cli/read.ts:27-31` | Changed to use RPC, consistent with MCP handler |
-| 5 | Config | `getFileApiBase()` silently falls back to `localhost:3002` | `handlers.ts:261` | Throws explicit error if `AGENTCHAT_WEB_URL` not set |
-| 6 | Config | `getAgentHeaders()` returns empty strings for missing env vars | `handlers.ts:264-270` | Throws if `AGENTCHAT_API_KEY` missing, omits name header if not set |
+| 5 | Config | `getFileApiBase()` silently falls back to `localhost:3002` | `handlers.ts:261` | Throws explicit error if `AIRCHAT_WEB_URL` not set |
+| 6 | Config | `getAgentHeaders()` returns empty strings for missing env vars | `handlers.ts:264-270` | Throws if `AIRCHAT_API_KEY` missing, omits name header if not set |
 
 ---
 
@@ -97,12 +97,12 @@ Tracks issues found, fixed, and verified across review passes to prevent regress
 | # | Type | Issue | File(s) | Fix |
 |---|------|-------|---------|-----|
 | 1 | Reuse | `formatSize`/`formatFileSize` duplicated in upload route and dashboard | `upload/route.ts`, `dashboard/page.tsx` | Extracted to `packages/shared/src/format.ts`, imported from both |
-| 2 | Reuse | `BUCKET = 'agentchat-files'` defined in 2 files | `files/route.ts`, `upload/route.ts` | Added `STORAGE_BUCKET` to shared constants |
+| 2 | Reuse | `BUCKET = 'airchat-files'` defined in 2 files | `files/route.ts`, `upload/route.ts` | Added `STORAGE_BUCKET` to shared constants |
 | 3 | Reuse | `'direct-messages'` hardcoded in 5+ files | Multiple | Added `DIRECT_MESSAGES_CHANNEL` to shared constants |
 | 4 | Reuse | `'dashboard-admin'`/`'slack-bridge'` hardcoded in 3 routes | Messages, upload, slack routes | Added `DASHBOARD_ADMIN_AGENT`, `SLACK_BRIDGE_AGENT` constants |
 | 5 | Reuse | `process.cwd().split('/').pop()` project derivation duplicated | `utils.ts`, `handlers.ts` | Extracted `getProjectName()` in utils |
-| 6 | Reuse | API routes use inline `createClient()` instead of shared `createAgentClient` | Messages, upload, slack routes | Switched to `createAgentClient` from `@agentchat/shared` |
-| 7 | Reuse | API routes use inline admin client instead of shared `createAdminClient` | `api-auth.ts`, `upload/route.ts` | Switched to `createAdminClient` from `@agentchat/shared` |
+| 6 | Reuse | API routes use inline `createClient()` instead of shared `createAgentClient` | Messages, upload, slack routes | Switched to `createAgentClient` from `@airchat/shared` |
+| 7 | Reuse | API routes use inline admin client instead of shared `createAdminClient` | `api-auth.ts`, `upload/route.ts` | Switched to `createAdminClient` from `@airchat/shared` |
 | 8 | Quality | Duplicated auth block in files/route.ts GET and POST | `files/route.ts` | Extracted `authenticateRequest()` in `api-auth.ts` |
 | 9 | Quality | Redundant `agents` state derived from `allAgents` | `dashboard/page.tsx` | Replaced with `useMemo` |
 | 10 | Quality | Dead `dmChannelName` variable | `dashboard/page.tsx` | Removed |

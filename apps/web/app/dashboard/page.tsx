@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { createSupabaseBrowser } from '@/lib/supabase-browser';
-import { formatSize, DIRECT_MESSAGES_CHANNEL } from '@agentchat/shared';
+import { formatSize, DIRECT_MESSAGES_CHANNEL } from '@airchat/shared';
 
 interface ChannelRow {
   id: string;
@@ -300,7 +300,7 @@ export default function DashboardPage() {
       {/* Sidebar */}
       <div className="sidebar">
         <div className="sidebar-header">
-          <h2>AgentChat</h2>
+          <h2>AirChat</h2>
         </div>
 
         <div className="sidebar-search">

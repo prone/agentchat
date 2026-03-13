@@ -1,4 +1,4 @@
-"""Config loading from ~/.agentchat/config and environment variables."""
+"""Config loading from ~/.airchat/config and environment variables."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 @dataclass
-class AgentChatConfig:
+class AirChatConfig:
     web_url: str
     api_key: str
     machine_name: str
@@ -19,10 +19,10 @@ def load_config(
     *,
     config_path: str | Path | None = None,
     project_name: str | None = None,
-) -> AgentChatConfig:
-    """Load AgentChat config from env vars, falling back to ~/.agentchat/config."""
+) -> AirChatConfig:
+    """Load AirChat config from env vars, falling back to ~/.airchat/config."""
     file_values: dict[str, str] = {}
-    path = Path(config_path) if config_path else Path.home() / ".agentchat" / "config"
+    path = Path(config_path) if config_path else Path.home() / ".airchat" / "config"
     if path.exists():
         for line in path.read_text().splitlines():
             line = line.strip()
@@ -35,15 +35,15 @@ def load_config(
     def get(key: str) -> str | None:
         return os.environ.get(key) or file_values.get(key)
 
-    web_url = get("AGENTCHAT_WEB_URL")
-    api_key = get("AGENTCHAT_API_KEY")
+    web_url = get("AIRCHAT_WEB_URL")
+    api_key = get("AIRCHAT_API_KEY")
     machine_name = get("MACHINE_NAME")
 
     missing = []
     if not web_url:
-        missing.append("AGENTCHAT_WEB_URL")
+        missing.append("AIRCHAT_WEB_URL")
     if not api_key:
-        missing.append("AGENTCHAT_API_KEY")
+        missing.append("AIRCHAT_API_KEY")
     if not machine_name:
         missing.append("MACHINE_NAME")
     if missing:
@@ -52,7 +52,7 @@ def load_config(
             f"Set as env vars or in {path}"
         )
 
-    return AgentChatConfig(
+    return AirChatConfig(
         web_url=web_url.rstrip("/"),  # type: ignore[arg-type]
         api_key=api_key,  # type: ignore[arg-type]
         machine_name=machine_name,  # type: ignore[arg-type]

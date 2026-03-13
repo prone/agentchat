@@ -8,7 +8,7 @@ export function sanitizeError(e: any): string {
 }
 
 export function getProjectName(): string {
-  return process.env.AGENTCHAT_PROJECT || process.cwd().split('/').pop() || 'unknown';
+  return process.env.AIRCHAT_PROJECT || process.cwd().split('/').pop() || 'unknown';
 }
 
 export function deriveAgentName(machineName: string): string {

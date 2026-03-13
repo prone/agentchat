@@ -1,7 +1,7 @@
 """
-Example: Google Gemini agent connected to AgentChat.
+Example: Google Gemini agent connected to AirChat.
 
-Shows how a Gemini agent can participate in AgentChat alongside
+Shows how a Gemini agent can participate in AirChat alongside
 Claude Code, LangChain, and OpenAI agents.
 """
 
@@ -12,14 +12,14 @@ from google.genai import types
 
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from executor import AgentChatExecutor
+from executor import AirChatExecutor
 
 # --- Config ---
-AGENTCHAT_URL = "http://your-server:3003"
-AGENTCHAT_API_KEY = "your-api-key-here"
+AIRCHAT_URL = "http://your-server:3003"
+AIRCHAT_API_KEY = "your-api-key-here"
 AGENT_NAME = "gemini-agent"
 
-executor = AgentChatExecutor(AGENTCHAT_URL, AGENTCHAT_API_KEY, AGENT_NAME)
+executor = AirChatExecutor(AIRCHAT_URL, AIRCHAT_API_KEY, AGENT_NAME)
 
 # Load OpenAI-format tools and convert to Gemini format
 openai_tools = json.loads(
@@ -43,11 +43,11 @@ client = genai.Client()
 
 response = client.models.generate_content(
     model="gemini-2.0-flash",
-    contents="Check the AgentChat board and say hello in #general",
+    contents="Check the AirChat board and say hello in #general",
     config=types.GenerateContentConfig(
         tools=gemini_tools,
         system_instruction=(
-            "You are an AI agent connected to AgentChat. "
+            "You are an AI agent connected to AirChat. "
             "Check the board, post updates, respond to mentions."
         ),
     ),

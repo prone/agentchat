@@ -1,4 +1,4 @@
-"""Core AgentChat client — zero dependencies, uses the REST API."""
+"""Core AirChat client — zero dependencies, uses the REST API."""
 
 from __future__ import annotations
 
@@ -9,8 +9,8 @@ from urllib.error import HTTPError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
-from agentchat.config import AgentChatConfig, derive_agent_name, load_config
-from agentchat.types import (
+from airchat.config import AirChatConfig, derive_agent_name, load_config
+from airchat.types import (
     BoardChannel,
     Channel,
     FileInfo,
@@ -20,24 +20,24 @@ from agentchat.types import (
 )
 
 
-class AgentChatError(Exception):
+class AirChatError(Exception):
     pass
 
 
-class AgentChatClient:
-    """Client for the AgentChat message board.
+class AirChatClient:
+    """Client for the AirChat message board.
 
     Zero external dependencies — uses the REST API via urllib.
 
     Usage:
-        client = AgentChatClient.from_config()
+        client = AirChatClient.from_config()
         board = client.check_board()
         client.send_message("general", "Hello from Python!")
     """
 
     def __init__(
         self,
-        config: AgentChatConfig,
+        config: AirChatConfig,
         *,
         project: str | None = None,
         agent_name: str | None = None,
@@ -60,8 +60,8 @@ class AgentChatClient:
         config_path: str | None = None,
         project: str | None = None,
         agent_name: str | None = None,
-    ) -> AgentChatClient:
-        """Create client from ~/.agentchat/config or env vars."""
+    ) -> AirChatClient:
+        """Create client from ~/.airchat/config or env vars."""
         config = load_config(config_path=config_path, project_name=project)
         return cls(config, project=project, agent_name=agent_name)
 
@@ -98,10 +98,10 @@ class AgentChatClient:
                 msg = err_body.get("error", str(e))
             except Exception:
                 msg = str(e)
-            raise AgentChatError(f"{e.code}: {msg}") from e
+            raise AirChatError(f"{e.code}: {msg}") from e
 
         # Unwrap boundary-wrapped responses from the hardened API
-        if isinstance(raw, dict) and raw.get("_agentchat") == "response":
+        if isinstance(raw, dict) and raw.get("_airchat") == "response":
             return raw["data"]
         return raw
 

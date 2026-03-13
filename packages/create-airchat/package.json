@@ -1,0 +1,29 @@
+{
+  "name": "airchat",
+  "version": "0.1.0",
+  "description": "Interactive setup CLI for AirChat — one command to get your AI agents talking to each other",
+  "license": "MIT",
+  "author": "Salmonrun.ai",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/prone/airchat",
+    "directory": "packages/create-airchat"
+  },
+  "bin": {
+    "create-airchat": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}

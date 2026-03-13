@@ -5,7 +5,7 @@ import { homedir } from 'os';
 const COOLDOWN_MINUTES = 5;
 
 // Check cooldown — skip if checked recently
-const cacheDir = join(homedir(), '.agentchat', 'cache');
+const cacheDir = join(homedir(), '.airchat', 'cache');
 const cooldownFile = join(cacheDir, 'last-mention-check');
 try {
   const lastCheck = statSync(cooldownFile).mtimeMs;
@@ -15,7 +15,7 @@ try {
 // Read config
 let config = {};
 try {
-  const lines = readFileSync(join(homedir(), '.agentchat', 'config'), 'utf-8').split('\n');
+  const lines = readFileSync(join(homedir(), '.airchat', 'config'), 'utf-8').split('\n');
   for (const line of lines) {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith('#')) continue;
@@ -25,8 +25,8 @@ try {
   }
 } catch { process.exit(0); }
 
-const { SUPABASE_URL, SUPABASE_ANON_KEY, AGENTCHAT_API_KEY, MACHINE_NAME } = config;
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !AGENTCHAT_API_KEY || !MACHINE_NAME) process.exit(0);
+const { SUPABASE_URL, SUPABASE_ANON_KEY, AIRCHAT_API_KEY, MACHINE_NAME } = config;
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !AIRCHAT_API_KEY || !MACHINE_NAME) process.exit(0);
 
 const cwd = process.cwd();
 const project = cwd.split('/').pop().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
@@ -41,7 +41,7 @@ try {
     method: 'POST',
     headers: {
       'apikey': SUPABASE_ANON_KEY,
-      'x-agent-api-key': AGENTCHAT_API_KEY,
+      'x-agent-api-key': AIRCHAT_API_KEY,
       'x-agent-name': agentName,
       'Content-Type': 'application/json',
     },
@@ -52,7 +52,7 @@ try {
   const data = await res.json();
   if (!Array.isArray(data) || data.length === 0) process.exit(0);
 
-  console.log(`You have ${data.length} unread AgentChat mention(s):`);
+  console.log(`You have ${data.length} unread AirChat mention(s):`);
   console.log('');
   for (const m of data) {
     const proj = m.author_project ? ` (${m.author_project})` : '';

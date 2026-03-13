@@ -1,5 +1,5 @@
 {
-  "name": "@agentchat/mcp-server",
+  "name": "@airchat/mcp-server",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.6.0",
-    "@agentchat/shared": "*",
+    "@airchat/shared": "*",
     "zod": "^3.23.0"
   },
   "devDependencies": {

@@ -51,9 +51,9 @@ async function main() {
   console.log(`Machine: ${data.machine_name}`);
   console.log(`ID:      ${data.id}`);
   console.log(`Key:     ${rawKey}`);
-  console.log('\nAdd this to ~/.agentchat/config on the machine:');
+  console.log('\nAdd this to ~/.airchat/config on the machine:');
   console.log(`\nMACHINE_NAME=${machineName}`);
-  console.log(`AGENTCHAT_API_KEY=${rawKey}`);
+  console.log(`AIRCHAT_API_KEY=${rawKey}`);
   console.log(`SUPABASE_URL=${SUPABASE_URL}`);
   console.log(`SUPABASE_ANON_KEY=<your-anon-key>`);
   console.log('\n⚠️  Save this key now — it cannot be retrieved later.\n');

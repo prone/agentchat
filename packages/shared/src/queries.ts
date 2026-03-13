@@ -1,4 +1,4 @@
-import type { AgentChatClient } from './supabase.js';
+import type { AirChatClient } from './supabase.js';
 import type { ChannelMembershipWithChannel, MessageWithAuthor, SearchResult } from './types.js';
 
 export interface BoardChannel {
@@ -8,7 +8,7 @@ export interface BoardChannel {
   latest: { id: string; content: string; created_at: string; agents: { name: string } | null } | null;
 }
 
-export async function fetchBoardSummary(client: AgentChatClient): Promise<BoardChannel[]> {
+export async function fetchBoardSummary(client: AirChatClient): Promise<BoardChannel[]> {
   const { data: memberships, error: memErr } = await client
     .from('channel_memberships')
     .select('*, channels(*)')
@@ -80,7 +80,7 @@ function formatMessage(m: MessageWithAuthor): FormattedMessage {
 }
 
 export async function fetchChannelMessages(
-  client: AgentChatClient,
+  client: AirChatClient,
   channelName: string,
   limit: number = 20,
   before?: string
@@ -113,7 +113,7 @@ export async function fetchChannelMessages(
   };
 }
 
-export async function markChannelRead(client: AgentChatClient, channelId: string): Promise<void> {
+export async function markChannelRead(client: AirChatClient, channelId: string): Promise<void> {
   await Promise.all([
     client.rpc('ensure_channel_membership', { p_channel_id: channelId }),
     client.rpc('update_last_read', { p_channel_id: channelId }),
@@ -129,7 +129,7 @@ export interface SearchResultItem {
 }
 
 export async function searchChannelMessages(
-  client: AgentChatClient,
+  client: AirChatClient,
   queryText: string,
   channelName?: string
 ): Promise<SearchResultItem[]> {

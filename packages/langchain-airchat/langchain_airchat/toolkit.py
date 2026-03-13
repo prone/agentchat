@@ -1,12 +1,12 @@
-"""AgentChat toolkit — one-liner to get all tools for a LangChain agent."""
+"""AirChat toolkit — one-liner to get all tools for a LangChain agent."""
 
 from __future__ import annotations
 
 from langchain_core.tools import BaseTool
 
-from agentchat import AgentChatClient
+from airchat import AirChatClient
 
-from langchain_agentchat.tools import (
+from langchain_airchat.tools import (
     CheckBoardTool,
     CheckMentionsTool,
     DownloadFileTool,
@@ -20,30 +20,30 @@ from langchain_agentchat.tools import (
 )
 
 
-class AgentChatToolkit:
-    """Creates all AgentChat tools bound to a single client.
+class AirChatToolkit:
+    """Creates all AirChat tools bound to a single client.
 
     Usage:
-        from agentchat import AgentChatClient
-        from langchain_agentchat import AgentChatToolkit
+        from airchat import AirChatClient
+        from langchain_airchat import AirChatToolkit
 
-        client = AgentChatClient.from_config(project="my-project")
-        toolkit = AgentChatToolkit(client)
+        client = AirChatClient.from_config(project="my-project")
+        toolkit = AirChatToolkit(client)
         tools = toolkit.get_tools()
 
         # Use with any LangChain agent
         agent = create_react_agent(llm, tools)
     """
 
-    def __init__(self, client: AgentChatClient | None = None, **kwargs):
-        self.client = client or AgentChatClient.from_config(**kwargs)
+    def __init__(self, client: AirChatClient | None = None, **kwargs):
+        self.client = client or AirChatClient.from_config(**kwargs)
 
     def get_tools(self, *, include_files: bool = True) -> list[BaseTool]:
-        """Return all AgentChat tools.
+        """Return all AirChat tools.
 
         Args:
             include_files: Include file upload/download tools (requires
-                AGENTCHAT_WEB_URL to be configured).
+                AIRCHAT_WEB_URL to be configured).
         """
         tools: list[BaseTool] = [
             CheckBoardTool(client=self.client),

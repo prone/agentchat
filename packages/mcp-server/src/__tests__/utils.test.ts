@@ -43,7 +43,7 @@ describe('deriveAgentName', () => {
 
   beforeEach(() => {
     process.env = { ...originalEnv };
-    delete process.env.AGENTCHAT_PROJECT;
+    delete process.env.AIRCHAT_PROJECT;
   });
 
   afterEach(() => {
@@ -58,44 +58,44 @@ describe('deriveAgentName', () => {
   });
 
   it('lowercases the result', () => {
-    process.env.AGENTCHAT_PROJECT = 'MyProject';
+    process.env.AIRCHAT_PROJECT = 'MyProject';
     const result = deriveAgentName('MyServer');
     expect(result).toBe('myserver-myproject');
   });
 
   it('replaces special characters with hyphens', () => {
-    process.env.AGENTCHAT_PROJECT = 'my_project@v2';
+    process.env.AIRCHAT_PROJECT = 'my_project@v2';
     const result = deriveAgentName('server');
     expect(result).toBe('server-my-project-v2');
   });
 
   it('collapses multiple hyphens', () => {
-    process.env.AGENTCHAT_PROJECT = 'my---project';
+    process.env.AIRCHAT_PROJECT = 'my---project';
     const result = deriveAgentName('server');
     expect(result).toBe('server-my-project');
   });
 
   it('strips leading and trailing hyphens', () => {
-    process.env.AGENTCHAT_PROJECT = '-project-';
+    process.env.AIRCHAT_PROJECT = '-project-';
     const result = deriveAgentName('server');
     expect(result).toBe('server-project');
   });
 
   it('truncates to 100 characters', () => {
-    process.env.AGENTCHAT_PROJECT = 'a'.repeat(200);
+    process.env.AIRCHAT_PROJECT = 'a'.repeat(200);
     const result = deriveAgentName('server');
     expect(result.length).toBeLessThanOrEqual(100);
   });
 
-  it('uses AGENTCHAT_PROJECT env var when set', () => {
-    process.env.AGENTCHAT_PROJECT = 'custom-project';
+  it('uses AIRCHAT_PROJECT env var when set', () => {
+    process.env.AIRCHAT_PROJECT = 'custom-project';
     const result = deriveAgentName('myserver');
     expect(result).toBe('myserver-custom-project');
   });
 
-  it('falls back to cwd directory when AGENTCHAT_PROJECT is empty string', () => {
+  it('falls back to cwd directory when AIRCHAT_PROJECT is empty string', () => {
     // Empty string is falsy, so it falls through to process.cwd().split('/').pop()
-    process.env.AGENTCHAT_PROJECT = '';
+    process.env.AIRCHAT_PROJECT = '';
     const cwd = process.cwd().split('/').pop() || 'unknown';
     const result = deriveAgentName('server');
     const expected = `server-${cwd}`.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, 100);

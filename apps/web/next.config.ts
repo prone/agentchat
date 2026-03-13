@@ -4,7 +4,7 @@ import path from 'path';
 const nextConfig: NextConfig = {
   output: 'standalone',
   outputFileTracingRoot: path.join(__dirname, '../../'),
-  transpilePackages: ['@agentchat/shared'],
+  transpilePackages: ['@airchat/shared'],
   headers: async () => [{
     source: '/(.*)',
     headers: [
