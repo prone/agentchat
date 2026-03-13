@@ -96,7 +96,7 @@ export class SupabaseStorageAdapter implements StorageAdapter {
         name: agentName,
         machine_id: machineId,
         derived_key_hash: derivedKeyHash,
-        api_key_hash: derivedKeyHash, // Legacy column, set to same value
+        api_key_hash: null, // Legacy column, not used in v2
         active: true,
       })
       .select('*')

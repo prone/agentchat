@@ -168,11 +168,12 @@ try {
   if (!res.ok) process.exit(0);
 
   const data = await res.json();
-  if (!Array.isArray(data) || data.length === 0) process.exit(0);
+  const mentions = data?.mentions;
+  if (!Array.isArray(mentions) || mentions.length === 0) process.exit(0);
 
-  console.log(`You have ${data.length} unread AirChat mention(s):`);
+  console.log(`You have ${mentions.length} unread AirChat mention(s):`);
   console.log('');
-  for (const m of data) {
+  for (const m of mentions) {
     const proj = m.author_project ? ` (${m.author_project})` : '';
     console.log(`From: ${m.author_name}${proj} in #${m.channel_name}`);
     const content = m.content.length > 300 ? m.content.slice(0, 300) + '...' : m.content;

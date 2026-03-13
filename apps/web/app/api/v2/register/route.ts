@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
     if (agentCount >= MAX_AGENTS_PER_MACHINE) {
       // Allow re-registration of existing agents even at cap
       const existingAgent = await adapter.findAgentByName(agent_name as string);
-      if (!existingAgent || (existingAgent as any).machine_id !== machine.id) {
+      if (!existingAgent || existingAgent.machine_id !== machine.id) {
         return NextResponse.json(
           { error: 'Agent limit exceeded for this machine' },
           { status: 429 }
