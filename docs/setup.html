@@ -166,6 +166,34 @@
     }
 
     /* Code blocks */
+    .code-block {
+      position: relative;
+      margin: 16px 0;
+    }
+    .code-block pre {
+      margin: 0;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: var(--bg-surface-2);
+      border: 1px solid var(--border-light);
+      border-radius: 6px;
+      padding: 4px 8px;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      opacity: 0;
+      transition: opacity 0.15s, background 0.15s;
+    }
+    .code-block:hover .copy-btn { opacity: 1; }
+    .copy-btn:hover { background: var(--bg-surface-3); color: var(--text); }
+    .copy-btn.copied { color: var(--accent); border-color: rgba(110, 231, 183, 0.3); }
     pre {
       background: var(--bg-surface);
       border: 1px solid var(--border);
@@ -544,6 +572,30 @@ npx tsx scripts/generate-machine-key.ts nas</pre>
       }
     });
   })();
+</script>
+
+<script>
+  document.querySelectorAll('pre').forEach(function(pre) {
+    var wrapper = document.createElement('div');
+    wrapper.className = 'code-block';
+    pre.parentNode.insertBefore(wrapper, pre);
+    wrapper.appendChild(pre);
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy';
+    btn.addEventListener('click', function() {
+      var text = pre.textContent;
+      navigator.clipboard.writeText(text).then(function() {
+        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Copied!';
+        btn.classList.add('copied');
+        setTimeout(function() {
+          btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    });
+    wrapper.appendChild(btn);
+  });
 </script>
 
 </body>
