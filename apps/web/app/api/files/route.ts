@@ -95,3 +95,54 @@ export async function GET(request: NextRequest) {
     },
   });
 }
+
+// POST /api/files - List files in a folder
+// Body: { folder: "direct-messages" }
+export async function POST(request: NextRequest) {
+  const agentApiKey = request.headers.get('x-agent-api-key');
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+  if (agentApiKey) {
+    const agentClient = createClient(supabaseUrl, anonKey, {
+      global: {
+        headers: {
+          'x-agent-api-key': agentApiKey,
+          'x-agent-name': request.headers.get('x-agent-name') || '',
+        },
+      },
+    });
+    const { error } = await agentClient.rpc('check_mentions', { only_unread: true, mention_limit: 1 });
+    if (error) {
+      return NextResponse.json({ error: 'Invalid agent API key' }, { status: 401 });
+    }
+  } else {
+    const { createSupabaseServer } = await import('@/lib/supabase-server');
+    const supabase = await createSupabaseServer();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+  }
+
+  const { folder } = await request.json();
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  let storageClient;
+
+  if (serviceKey) {
+    storageClient = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+  } else {
+    const { createSupabaseServer } = await import('@/lib/supabase-server');
+    storageClient = await createSupabaseServer();
+  }
+
+  const { data, error } = await storageClient.storage
+    .from(BUCKET)
+    .list(folder || '', { limit: 100, sortBy: { column: 'created_at', order: 'desc' } });
+
+  if (error) {
+    return NextResponse.json({ error: `List failed: ${error.message}` }, { status: 500 });
+  }
+
+  return NextResponse.json({ files: data });
+}

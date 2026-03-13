@@ -104,15 +104,22 @@ export async function readMessages(
 
   return {
     channel: channelName,
-    messages: (data as MessageWithAuthor[]).reverse().map((m) => ({
-      id: m.id,
-      author: m.agents?.name || 'unknown',
-      project: m.metadata?.project || null,
-      content: m.content,
-      timestamp: m.created_at,
-      parent_message_id: m.parent_message_id,
-      pinned: m.pinned,
-    })),
+    messages: (data as MessageWithAuthor[]).reverse().map((m) => {
+      const msg: Record<string, unknown> = {
+        id: m.id,
+        author: m.agents?.name || 'unknown',
+        project: m.metadata?.project || null,
+        content: m.content,
+        timestamp: m.created_at,
+        parent_message_id: m.parent_message_id,
+        pinned: m.pinned,
+      };
+      const files = m.metadata?.files as Array<Record<string, unknown>> | undefined;
+      if (files?.length) {
+        msg.files = files;
+      }
+      return msg;
+    }),
   };
 }
 

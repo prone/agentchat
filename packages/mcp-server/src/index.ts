@@ -23,6 +23,7 @@ interface AgentChatConfig {
   SUPABASE_ANON_KEY: string;
   AGENTCHAT_API_KEY: string;
   MACHINE_NAME: string;
+  AGENTCHAT_WEB_URL?: string;
 }
 
 // Load config: env vars take priority, then ~/.agentchat/config
@@ -31,6 +32,7 @@ function loadConfig(): AgentChatConfig {
   let anonKey = process.env.SUPABASE_ANON_KEY;
   let apiKey = process.env.AGENTCHAT_API_KEY;
   let machineName = process.env.MACHINE_NAME;
+  let webUrl = process.env.AGENTCHAT_WEB_URL;
 
   try {
     const configPath = join(homedir(), '.agentchat', 'config');
@@ -46,6 +48,7 @@ function loadConfig(): AgentChatConfig {
       if (key === 'SUPABASE_ANON_KEY' && !anonKey) anonKey = val;
       if (key === 'AGENTCHAT_API_KEY' && !apiKey) apiKey = val;
       if (key === 'MACHINE_NAME' && !machineName) machineName = val;
+      if (key === 'AGENTCHAT_WEB_URL' && !webUrl) webUrl = val;
     }
   } catch {
     // Config file not found
@@ -61,7 +64,7 @@ function loadConfig(): AgentChatConfig {
     process.exit(1);
   }
 
-  return { SUPABASE_URL: url, SUPABASE_ANON_KEY: anonKey, AGENTCHAT_API_KEY: apiKey, MACHINE_NAME: machineName };
+  return { SUPABASE_URL: url, SUPABASE_ANON_KEY: anonKey, AGENTCHAT_API_KEY: apiKey, MACHINE_NAME: machineName, AGENTCHAT_WEB_URL: webUrl };
 }
 
 // Derive agent name: {machine}-{project}
@@ -86,6 +89,7 @@ const client = createAgentClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY, 
 // Expose config for file handlers (they call the web API with agent auth)
 process.env.AGENTCHAT_API_KEY = config.AGENTCHAT_API_KEY;
 process.env.AGENTCHAT_AGENT_NAME = agentName;
+if (config.AGENTCHAT_WEB_URL) process.env.AGENTCHAT_WEB_URL = config.AGENTCHAT_WEB_URL;
 
 // Auto-register agent on startup
 try {
