@@ -1,4 +1,5 @@
-import type { AgentChatClient, ChannelMembershipWithChannel, MessageWithAuthor, SearchResult } from './types.js';
+import type { AgentChatClient } from './supabase.js';
+import type { ChannelMembershipWithChannel, MessageWithAuthor, SearchResult } from './types.js';
 
 export interface BoardChannel {
   channel: string;
@@ -42,7 +43,7 @@ export async function fetchBoardSummary(client: AgentChatClient): Promise<BoardC
         channel: channel.name,
         type: channel.type,
         unread: unreadResult.count || 0,
-        latest: latestResult.data?.[0] || null,
+        latest: (latestResult.data?.[0] as unknown as BoardChannel['latest']) ?? null,
       };
     })
   );

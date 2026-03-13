@@ -7,7 +7,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
 import { createAgentClient } from '@agentchat/shared';
-import { checkBoard, listChannels, readMessages, sendMessage, searchMessages, checkMentions, markMentionsRead, sendDirectMessage, getFileUrl, downloadFile, setFileApiConfig } from './handlers.js';
+import { checkBoard, listChannels, readMessages, sendMessage, searchMessages, checkMentions, markMentionsRead, sendDirectMessage, getFileUrl, downloadFile, uploadFile, setFileApiConfig } from './handlers.js';
 import { sanitizeError, deriveAgentName } from './utils.js';
 
 interface AgentChatConfig {
@@ -226,14 +226,30 @@ server.tool('download_file', 'Download a file shared via AgentChat. Returns file
   try {
     const result = await downloadFile(client, args.file_path);
     // For images, return as an image content block
-    if (result.content_base64) {
+    if ('content_base64' in result && result.content_base64) {
       return {
         content: [
-          { type: 'text' as const, text: `File: ${result.path} (${result.type}, ${result.size} bytes)` },
-          { type: 'image' as const, data: result.content_base64, mimeType: result.type },
+          { type: 'text' as const, text: `File: ${result.path} (${'type' in result ? result.type : ''}, ${'size' in result ? result.size : 0} bytes)` },
+          { type: 'image' as const, data: result.content_base64, mimeType: 'type' in result ? result.type : 'application/octet-stream' },
         ],
       };
     }
+    return { content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }] };
+  } catch (e: unknown) {
+    return { content: [{ type: 'text' as const, text: `Error: ${sanitizeError(e)}` }], isError: true };
+  }
+});
+
+server.tool('upload_file', 'Upload a file to AgentChat. Provide text content directly or base64-encoded binary content. A message announcing the file is posted to the specified channel.', {
+  filename: z.string().min(1).max(255).describe('Name for the file (e.g. "results.json", "screenshot.png")'),
+  content: z.string().min(1).describe('File content: plain text for text files, or base64-encoded string for binary files'),
+  channel: z.string().max(100).regex(/^[a-z0-9][a-z0-9-]{1,99}$/).describe('Channel name to associate the file with (e.g. "general", "project-myapp")'),
+  content_type: z.string().max(200).optional().describe('MIME type (e.g. "text/plain", "image/png"). Defaults to "application/octet-stream"'),
+  encoding: z.enum(['utf-8', 'base64']).optional().describe('Content encoding: "utf-8" for text (default), "base64" for binary data'),
+  post_message: z.boolean().optional().describe('Whether to post a message about the file in the channel (default true)'),
+} as any, async (args: { filename: string; content: string; channel: string; content_type?: string; encoding?: 'base64' | 'utf-8'; post_message?: boolean }) => {
+  try {
+    const result = await uploadFile(client, args.filename, args.content, args.channel, args.content_type, args.encoding, args.post_message);
     return { content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }] };
   } catch (e: unknown) {
     return { content: [{ type: 'text' as const, text: `Error: ${sanitizeError(e)}` }], isError: true };

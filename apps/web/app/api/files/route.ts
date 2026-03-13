@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { authenticateRequest, getStorageClient } from '@/lib/api-auth';
-import { STORAGE_BUCKET } from '@agentchat/shared';
+import { authenticateRequest, getStorageClient, ensureAgentRegistered } from '@/lib/api-auth';
+import { STORAGE_BUCKET, createAgentClient, formatSize } from '@agentchat/shared';
 
 function validateStoragePath(p: string): boolean {
   if (p.includes('..') || p.startsWith('/') || p.includes('\0')) return false;
@@ -69,6 +69,100 @@ export async function GET(request: NextRequest) {
       'Content-Length': buffer.length.toString(),
       'Content-Disposition': `inline; filename="${(filePath.split('/').pop() || 'download').replace(/[^a-zA-Z0-9._-]/g, '_')}"`,
     },
+  });
+}
+
+const MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB for API uploads
+
+/** Sanitize a file name: replace anything that isn't alphanumeric, dot, dash, or underscore. */
+function sanitizeFileName(name: string): string {
+  return name.replace(/[^a-zA-Z0-9._-]/g, '_');
+}
+
+// PUT /api/files - Upload a file via JSON body (for agents)
+// Body: { filename, content, channel, content_type?, encoding?, post_message? }
+export async function PUT(request: NextRequest) {
+  const authenticated = await authenticateRequest(request);
+  if (!authenticated) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  let body: {
+    filename: string;
+    content: string;
+    channel: string;
+    content_type?: string;
+    encoding?: 'base64' | 'utf-8';
+    post_message?: boolean;
+  };
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
+
+  const { filename, content, channel, content_type, encoding, post_message } = body;
+
+  if (!filename || !content || !channel) {
+    return NextResponse.json({ error: 'filename, content, and channel are required' }, { status: 400 });
+  }
+
+  // Convert content to buffer
+  const buffer = encoding === 'base64'
+    ? Buffer.from(content, 'base64')
+    : Buffer.from(content, 'utf-8');
+
+  if (buffer.length > MAX_UPLOAD_SIZE_BYTES) {
+    return NextResponse.json({ error: `File too large (max ${MAX_UPLOAD_SIZE_BYTES / 1024 / 1024}MB)` }, { status: 400 });
+  }
+
+  const safeName = sanitizeFileName(filename);
+  const storagePath = `${channel}/${Date.now()}-${safeName}`;
+
+  if (!validateStoragePath(storagePath)) {
+    return NextResponse.json({ error: 'Invalid file path' }, { status: 400 });
+  }
+
+  const storageClient = getStorageClient();
+  if (!storageClient) {
+    return NextResponse.json({ error: 'Storage not configured (missing SUPABASE_SERVICE_ROLE_KEY)' }, { status: 500 });
+  }
+
+  const mimeType = content_type || 'application/octet-stream';
+  const { error: uploadErr } = await storageClient.storage
+    .from(STORAGE_BUCKET)
+    .upload(storagePath, buffer, { contentType: mimeType, upsert: false });
+
+  if (uploadErr) {
+    return NextResponse.json({ error: `Upload failed: ${uploadErr.message}` }, { status: 500 });
+  }
+
+  // Post a message about the file if requested (default true)
+  if (post_message !== false) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const agentApiKey = request.headers.get('x-agent-api-key');
+    const agentName = request.headers.get('x-agent-name') || 'unknown-agent';
+
+    if (supabaseUrl && anonKey && agentApiKey) {
+      const agentClient = createAgentClient(supabaseUrl, anonKey, agentApiKey, agentName);
+      await ensureAgentRegistered(agentName);
+
+      await agentClient.rpc('send_message_with_auto_join', {
+        channel_name: channel,
+        content: `Shared a file: **${filename}** (${formatSize(buffer.length)})`,
+        parent_message_id: null,
+        message_metadata: {
+          source: 'agent-upload',
+          agent: agentName,
+          files: [{ name: filename, size: buffer.length, type: mimeType, path: storagePath, bucket: STORAGE_BUCKET }],
+        },
+      });
+    }
+  }
+
+  return NextResponse.json({
+    file: { name: filename, size: buffer.length, path: storagePath, bucket: STORAGE_BUCKET },
   });
 }
 

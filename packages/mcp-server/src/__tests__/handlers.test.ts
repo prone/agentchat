@@ -534,7 +534,7 @@ describe('downloadFile', () => {
     }));
 
     const client: any = {};
-    const result = await downloadFile(client, 'general/readme.txt');
+    const result = await downloadFile(client, 'general/readme.txt') as any;
 
     expect(result.path).toBe('general/readme.txt');
     expect(result.type).toBe('text/plain');
@@ -554,7 +554,7 @@ describe('downloadFile', () => {
     }));
 
     const client: any = {};
-    const result = await downloadFile(client, 'general/screenshot.png');
+    const result = await downloadFile(client, 'general/screenshot.png') as any;
 
     expect(result.path).toBe('general/screenshot.png');
     expect(result.type).toBe('image/png');

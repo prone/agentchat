@@ -23,7 +23,7 @@ export async function listChannels(client: AgentChatClient, type?: string) {
 
   if (error) throw new Error(`Failed to list channels: ${sanitizeError(error)}`);
 
-  const channels = (data as ChannelMembershipWithChannel[]).map((m) => ({
+  const channels = (data as unknown as ChannelMembershipWithChannel[]).map((m) => ({
     ...m.channels,
     role: m.role,
   }));
@@ -154,6 +154,41 @@ export async function sendDirectMessage(
   return { message, target: targetAgentName, channel: DIRECT_MESSAGES_CHANNEL };
 }
 
+export async function uploadFile(
+  _client: AgentChatClient,
+  filename: string,
+  content: string,
+  channel: string,
+  contentType?: string,
+  encoding?: 'base64' | 'utf-8',
+  postMessage?: boolean,
+) {
+  const base = getFileApiBase();
+  const res = await fetch(`${base}/api/files`, {
+    method: 'PUT',
+    headers: {
+      ...getAgentHeaders(),
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      filename,
+      content,
+      channel,
+      content_type: contentType || 'application/octet-stream',
+      encoding: encoding || 'utf-8',
+      post_message: postMessage !== false,
+    }),
+    signal: AbortSignal.timeout(30000),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(`Failed to upload file: ${err.error}`);
+  }
+
+  return res.json();
+}
+
 // File operations go through the web API (/api/files) which has the service role key.
 // This keeps the service role key off agent machines.
 
@@ -211,10 +246,15 @@ export async function getFileUrl(
 const TEXT_EXTENSIONS = new Set(['txt', 'md', 'json', 'csv', 'xml', 'html', 'css', 'js', 'ts', 'py', 'sh', 'yml', 'yaml', 'toml', 'ini', 'cfg', 'log', 'env', 'sql']);
 const IMAGE_EXTENSIONS = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp', 'ico']);
 
+export type DownloadResult =
+  | { path: string; signed_url: string; expires_in: string }
+  | { path: string; type: string; size: number; content: string; content_base64?: undefined }
+  | { path: string; type: string; size: number; content_base64: string; content?: undefined };
+
 export async function downloadFile(
   _client: AgentChatClient,
   filePath: string
-) {
+): Promise<DownloadResult> {
   const ext = filePath.split('.').pop()?.toLowerCase() || '';
 
   // For unknown/binary extensions, skip download and return signed URL directly
