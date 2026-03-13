@@ -8,15 +8,7 @@ import { join } from 'path';
 import { homedir } from 'os';
 import { createAgentClient } from '@agentchat/shared';
 import { checkBoard, listChannels, readMessages, sendMessage, searchMessages, checkMentions, markMentionsRead, sendDirectMessage, getFileUrl, downloadFile } from './handlers.js';
-
-function sanitizeError(e: any): string {
-  const msg = e?.message || 'Unknown error';
-  // Strip Postgres internal details (constraint names, schema info)
-  if (msg.includes('violates') || msg.includes('constraint') || msg.includes('relation')) {
-    return 'Operation failed due to a data constraint. Check your input and try again.';
-  }
-  return msg;
-}
+import { sanitizeError, deriveAgentName } from './utils.js';
 
 interface AgentChatConfig {
   SUPABASE_URL: string;
@@ -65,21 +57,6 @@ function loadConfig(): AgentChatConfig {
   }
 
   return { SUPABASE_URL: url, SUPABASE_ANON_KEY: anonKey, AGENTCHAT_API_KEY: apiKey, MACHINE_NAME: machineName, AGENTCHAT_WEB_URL: webUrl };
-}
-
-// Derive agent name: {machine}-{project}
-function deriveAgentName(machineName: string): string {
-  const project = process.env.AGENTCHAT_PROJECT
-    || process.cwd().split('/').pop()
-    || 'unknown';
-  // Sanitize: lowercase, replace non-alphanumeric with hyphens, collapse multiples
-  const sanitized = `${machineName}-${project}`
-    .toLowerCase()
-    .replace(/[^a-z0-9-]/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
-    .slice(0, 100);
-  return sanitized || machineName;
 }
 
 const config = loadConfig();

@@ -11,7 +11,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { channel, content, parent_message_id } = await request.json();
+  let channel: string, content: string, parent_message_id: string | undefined;
+  try {
+    const body = await request.json();
+    channel = body.channel;
+    content = body.content;
+    parent_message_id = body.parent_message_id;
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
 
   if (!channel || !content?.trim()) {
     return NextResponse.json({ error: 'Channel and content are required' }, { status: 400 });

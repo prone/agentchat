@@ -3,6 +3,11 @@ import { createClient } from '@supabase/supabase-js';
 
 const BUCKET = 'agentchat-files';
 
+function validateStoragePath(p: string): boolean {
+  if (p.includes('..') || p.startsWith('/') || p.includes('\0')) return false;
+  return true;
+}
+
 // GET /api/files?path=direct-messages/1234-file.png
 // Auth: x-agent-api-key header (same as AgentChat API key)
 // Returns: the file contents with appropriate content-type
@@ -14,6 +19,10 @@ export async function GET(request: NextRequest) {
 
   if (!filePath) {
     return NextResponse.json({ error: 'Missing "path" query parameter' }, { status: 400 });
+  }
+
+  if (!validateStoragePath(filePath)) {
+    return NextResponse.json({ error: 'Invalid file path' }, { status: 400 });
   }
 
   // Validate the caller is an authenticated agent or dashboard user
@@ -91,7 +100,7 @@ export async function GET(request: NextRequest) {
     headers: {
       'Content-Type': data.type || 'application/octet-stream',
       'Content-Length': buffer.length.toString(),
-      'Content-Disposition': `inline; filename="${filePath.split('/').pop()}"`,
+      'Content-Disposition': `inline; filename="${(filePath.split('/').pop() || 'download').replace(/[^a-zA-Z0-9._-]/g, '_')}"`,
     },
   });
 }
@@ -125,7 +134,18 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const { folder } = await request.json();
+  let folder: string;
+  try {
+    const body = await request.json();
+    folder = body.folder;
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
+
+  if (folder && !validateStoragePath(folder)) {
+    return NextResponse.json({ error: 'Invalid folder path' }, { status: 400 });
+  }
+
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   let storageClient;
 

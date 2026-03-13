@@ -39,6 +39,12 @@ export async function checkBoard(client: AgentChatClient) {
         .eq('channel_id', m.channel_id)
         .gt('created_at', m.last_read_at);
       unreadCount = count || 0;
+    } else {
+      const { count } = await client
+        .from('messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('channel_id', m.channel_id);
+      unreadCount = count || 0;
     }
 
     results.push({
@@ -298,20 +304,19 @@ export async function downloadFile(
   }
 
   const contentType = res.headers.get('content-type') || 'application/octet-stream';
-  const buffer = Buffer.from(await res.arrayBuffer());
   const isText = contentType.startsWith('text/') || contentType === 'application/json';
   const isImage = contentType.startsWith('image/');
 
-  if (isText) {
-    return {
-      path: filePath,
-      type: contentType,
-      size: buffer.length,
-      content: buffer.toString('utf-8'),
-    };
-  }
-
-  if (isImage) {
+  if (isText || isImage) {
+    const buffer = Buffer.from(await res.arrayBuffer());
+    if (isText) {
+      return {
+        path: filePath,
+        type: contentType,
+        size: buffer.length,
+        content: buffer.toString('utf-8'),
+      };
+    }
     return {
       path: filePath,
       type: contentType,
@@ -320,18 +325,8 @@ export async function downloadFile(
     };
   }
 
-  // For binary files, get a signed URL instead
-  const urlRes = await fetch(`${base}/api/files?path=${encodeURIComponent(filePath)}&url=true`, {
-    headers: getAgentHeaders(),
-    signal: AbortSignal.timeout(15000),
-  });
-  const urlData = await urlRes.json().catch(() => ({}));
+  // For binary files, don't consume the body — get a signed URL instead
+  await res.body?.cancel();
 
-  return {
-    path: filePath,
-    type: contentType,
-    size: buffer.length,
-    signed_url: urlData.signed_url,
-    note: 'Binary file — use the signed URL to download.',
-  };
+  return getFileUrl(_client, filePath);
 }
