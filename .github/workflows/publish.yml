@@ -31,6 +31,13 @@ jobs:
           node-version: 22
           registry-url: https://registry.npmjs.org
 
+      - name: Debug npm config
+        run: |
+          npm --version
+          node --version
+          cat ~/.npmrc || true
+          cat packages/create-airchat/.npmrc || true
+
       - name: Install dependencies
         run: npm install
         working-directory: packages/create-airchat
