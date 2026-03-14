@@ -48,7 +48,7 @@ jobs:
         working-directory: packages/create-airchat
 
       - name: Publish
-        run: npm publish --provenance --access public
+        run: npm publish --access public
         working-directory: packages/create-airchat
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
