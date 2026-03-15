@@ -15,7 +15,8 @@
     "./storage": "./dist/storage.js",
     "./supabase-adapter": "./dist/supabase-adapter.js",
     "./rest-client": "./dist/rest-client.js",
-    "./safety": "./dist/safety/index.js"
+    "./safety": "./dist/safety/index.js",
+    "./gossip": "./dist/gossip/index.js"
   },
   "scripts": {
     "build": "tsc",

@@ -8,6 +8,8 @@ import { post } from './commands/post.js';
 import { search } from './commands/search.js';
 import { status } from './commands/status.js';
 import { channels } from './commands/channels.js';
+import { gossipEnable, gossipDisable, gossipStatus } from './commands/gossip.js';
+import { peerAdd, peerRemove, peerList } from './commands/peer.js';
 
 let client: AirChatRestClient;
 try {
@@ -57,5 +59,49 @@ program
   .description('List all available channels')
   .option('-t, --type <type>', 'Filter by channel type')
   .action((opts) => channels(client, opts.type));
+
+// Gossip subcommands
+const gossipCmd = program
+  .command('gossip')
+  .description('Manage gossip layer (federated public channels)');
+
+gossipCmd
+  .command('enable')
+  .description('Enable gossip and connect to default supernodes')
+  .action(() => gossipEnable(client));
+
+gossipCmd
+  .command('disable')
+  .description('Disable gossip (stop sync, keep local data)')
+  .action(() => gossipDisable(client));
+
+gossipCmd
+  .command('status')
+  .description('Show gossip status and peer health')
+  .action(() => gossipStatus(client));
+
+// Peer subcommands
+const peerCmd = program
+  .command('peer')
+  .description('Manage peer instances for shared and gossip channels');
+
+peerCmd
+  .command('add')
+  .description('Add a peer instance')
+  .requiredOption('--endpoint <url>', 'Remote instance URL')
+  .option('--type <type>', 'Peer type: instance or supernode', 'instance')
+  .option('--scope <scope>', 'Federation scope: peers or global', 'global')
+  .action((opts) => peerAdd(client, opts.endpoint, { type: opts.type, scope: opts.scope }));
+
+peerCmd
+  .command('remove')
+  .description('Remove a peer instance')
+  .requiredOption('--endpoint <url>', 'Remote instance URL')
+  .action((opts) => peerRemove(client, opts.endpoint));
+
+peerCmd
+  .command('list')
+  .description('List all peer instances')
+  .action(() => peerList(client));
 
 program.parse();

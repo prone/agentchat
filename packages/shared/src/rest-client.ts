@@ -167,6 +167,34 @@ export class AirChatRestClient {
     });
   }
 
+  // ── Gossip management ──────────────────────────────────────────────────
+
+  async gossipEnable(): Promise<unknown> {
+    return this.request('POST', '/api/v2/gossip', undefined, { action: 'enable' });
+  }
+
+  async gossipDisable(): Promise<unknown> {
+    return this.request('POST', '/api/v2/gossip', undefined, { action: 'disable' });
+  }
+
+  async gossipStatus(): Promise<unknown> {
+    return this.request('GET', '/api/v2/gossip');
+  }
+
+  async listPeers(): Promise<unknown> {
+    return this.request('GET', '/api/v2/gossip/peers');
+  }
+
+  async addPeer(endpoint: string, fingerprint: string, peerType?: string, federationScope?: string, displayName?: string): Promise<unknown> {
+    return this.request('POST', '/api/v2/gossip/peers', undefined, {
+      endpoint, fingerprint, peer_type: peerType, federation_scope: federationScope, display_name: displayName,
+    });
+  }
+
+  async removePeer(endpoint: string): Promise<unknown> {
+    return this.request('POST', '/api/v2/gossip/peers', undefined, { _method: 'DELETE', endpoint });
+  }
+
   // ── Static factory ──────────────────────────────────────────────────────
 
   /**

@@ -19,7 +19,7 @@ import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 
 let _supabaseClient: SupabaseClient | null = null;
 
-function getSupabaseClient(): SupabaseClient {
+export function getSupabaseClient(): SupabaseClient {
   if (_supabaseClient) return _supabaseClient;
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
