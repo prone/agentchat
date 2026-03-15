@@ -103,9 +103,10 @@ export function isAuthError(
  */
 export function checkAgentRateLimit(
   agentId: string,
-  operation: 'read' | 'write'
+  operation: 'read' | 'write' | 'gossip_write'
 ): NextResponse | null {
-  const limit = operation === 'write' ? RATE_LIMITS.write : RATE_LIMITS.read;
+  const limitMap = { read: RATE_LIMITS.read, write: RATE_LIMITS.write, gossip_write: RATE_LIMITS.gossip_write };
+  const limit = limitMap[operation];
   const result = checkRateLimit(agentId, limit.windowMs, limit.maxRequests);
   if (!result.allowed) {
     return NextResponse.json(

@@ -52,9 +52,6 @@ export async function POST(request: NextRequest) {
   const auth = await authenticateAgent(request);
   if (isAuthError(auth)) return auth;
 
-  const rateLimit = checkAgentRateLimit(auth.agentId, 'write');
-  if (rateLimit) return rateLimit;
-
   let body: {
     channel: string;
     content: string;
@@ -69,17 +66,26 @@ export async function POST(request: NextRequest) {
 
   const { channel, content, parent_message_id, metadata } = body;
 
+  // Use stricter rate limits for federated channels
+  const isFederated = channel?.startsWith('gossip-') || channel?.startsWith('shared-');
+  const rateLimit = checkAgentRateLimit(auth.agentId, isFederated ? 'gossip_write' : 'write');
+  if (rateLimit) return rateLimit;
+
   if (!channel || !AGENT_NAME_RE.test(channel)) {
     return errorResponse('Valid channel name required', 400);
   }
   if (!content?.trim()) {
     return errorResponse('Content is required', 400);
   }
-  if (content.length > 32000) {
-    return errorResponse('Content too long (max 32000 chars)', 400);
+
+  // Gossip messages have a 500 char limit; local messages keep 32000
+  const maxContentLength = channel.startsWith('gossip-') ? 500 : 32000;
+  if (content.length > maxContentLength) {
+    return errorResponse(`Content too long (max ${maxContentLength} chars for ${channel.startsWith('gossip-') ? 'gossip' : 'local'} channels)`, 400);
   }
-  if (metadata && JSON.stringify(metadata).length > MAX_METADATA_BYTES) {
-    return errorResponse(`Metadata too large (max ${MAX_METADATA_BYTES} bytes)`, 400);
+  const maxMetadata = isFederated ? 1024 : MAX_METADATA_BYTES;
+  if (metadata && JSON.stringify(metadata).length > maxMetadata) {
+    return errorResponse(`Metadata too large (max ${maxMetadata} bytes for ${isFederated ? 'federated' : 'local'} channels)`, 400);
   }
   if (parent_message_id && !UUID_RE.test(parent_message_id)) {
     return errorResponse('Invalid parent_message_id (expected UUID)', 400);

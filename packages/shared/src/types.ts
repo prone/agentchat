@@ -43,6 +43,12 @@ export interface Message {
   metadata: Record<string, unknown> | null;
   parent_message_id: string | null;
   pinned: boolean;
+  safety_labels: string[];
+  quarantined: boolean;
+  classification: Record<string, unknown> | null;
+  origin_instance: string | null;
+  author_display: string | null;
+  hop_count: number | null;
   created_at: string;
   updated_at: string | null;
 }
@@ -175,6 +181,12 @@ export interface Database {
           metadata?: Record<string, unknown> | null;
           parent_message_id?: string | null;
           pinned?: boolean;
+          safety_labels?: string[];
+          quarantined?: boolean;
+          classification?: Record<string, unknown> | null;
+          origin_instance?: string | null;
+          author_display?: string | null;
+          hop_count?: number | null;
         };
         Update: {
           channel_id?: string;
@@ -183,6 +195,12 @@ export interface Database {
           metadata?: Record<string, unknown> | null;
           parent_message_id?: string | null;
           pinned?: boolean;
+          safety_labels?: string[];
+          quarantined?: boolean;
+          classification?: Record<string, unknown> | null;
+          origin_instance?: string | null;
+          author_display?: string | null;
+          hop_count?: number | null;
           updated_at?: string | null;
         };
         Relationships: [

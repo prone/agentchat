@@ -18,11 +18,20 @@ import type {
   StorageAdapter,
 } from './storage.js';
 import type { ChannelMembershipWithChannel } from './types.js';
+import type { PatternSet, ClassificationResult } from './safety/types.js';
+import { classifyMessage } from './safety/classifier.js';
 
 // ── SupabaseStorageAdapter ─────────────────────────────────────────────────
 
 export class SupabaseStorageAdapter implements StorageAdapter {
+  private patternSet: PatternSet | null = null;
+
   constructor(private readonly client: SupabaseClient) {}
+
+  /** Set the pattern set used for safety classification on federated channels. */
+  setPatternSet(patterns: PatternSet): void {
+    this.patternSet = patterns;
+  }
 
   async findAgentByDerivedKeyHash(hash: string): Promise<Agent | null> {
     const { data, error } = await this.client
@@ -131,7 +140,7 @@ export class SupabaseStorageAdapter implements StorageAdapter {
   }
 
   forAgent(ctx: AgentContext): ScopedStorageAdapter {
-    return new SupabaseScopedAdapter(this.client, ctx);
+    return new SupabaseScopedAdapter(this.client, ctx, this.patternSet);
   }
 }
 
@@ -140,7 +149,8 @@ export class SupabaseStorageAdapter implements StorageAdapter {
 class SupabaseScopedAdapter implements ScopedStorageAdapter {
   constructor(
     private readonly client: SupabaseClient,
-    private readonly ctx: AgentContext
+    private readonly ctx: AgentContext,
+    private readonly patternSet: PatternSet | null = null
   ) {}
 
   async getChannels(type?: string): Promise<Channel[]> {
@@ -186,6 +196,7 @@ class SupabaseScopedAdapter implements ScopedStorageAdapter {
       .from('messages')
       .select('*, agents:author_agent_id(id, name)')
       .eq('channel_id', channelId)
+      .eq('quarantined', false) // Never show quarantined messages to agents
       .order('created_at', { ascending: false })
       .limit(Math.min(limit, 200));
 
@@ -212,7 +223,28 @@ class SupabaseScopedAdapter implements ScopedStorageAdapter {
     // 2. Ensure agent is a member
     await this.ensureChannelMembership(channelId);
 
-    // 3. Insert message with author_agent_id = ctx.agentId
+    // 3. Classify if channel is federated (shared or gossip)
+    let safetyLabels: string[] = [];
+    let quarantined = false;
+    let classification: Record<string, unknown> | null = null;
+
+    const channel = await this.getChannelById(channelId);
+    if (channel && channel.federation_scope !== 'local' && this.patternSet) {
+      const result: ClassificationResult = classifyMessage(
+        content,
+        metadata ?? null,
+        this.patternSet
+      );
+      safetyLabels = result.labels;
+      quarantined = result.label === 'quarantined';
+      classification = {
+        matched_patterns: result.matched_patterns,
+        route_to_sandbox: result.route_to_sandbox,
+        sandbox_priority: result.sandbox_priority,
+      };
+    }
+
+    // 4. Insert message with author_agent_id = ctx.agentId
     const { data: message, error } = await this.client
       .from('messages')
       .insert({
@@ -221,6 +253,9 @@ class SupabaseScopedAdapter implements ScopedStorageAdapter {
         content,
         metadata: metadata ?? null,
         parent_message_id: parentMessageId ?? null,
+        safety_labels: safetyLabels,
+        quarantined,
+        classification,
       })
       .select('*')
       .single();
@@ -229,7 +264,7 @@ class SupabaseScopedAdapter implements ScopedStorageAdapter {
       throw new Error(`Failed to send message: ${error?.message ?? 'unknown error'}`);
     }
 
-    // 4. Update last_read_at for the author's membership
+    // 5. Update last_read_at for the author's membership
     await this.client
       .from('channel_memberships')
       .update({ last_read_at: new Date().toISOString() })
@@ -379,6 +414,17 @@ class SupabaseScopedAdapter implements ScopedStorageAdapter {
   }
 
   // ── Private helpers ────────────────────────────────────────────────────
+
+  private async getChannelById(channelId: string): Promise<Channel | null> {
+    const { data, error } = await this.client
+      .from('channels')
+      .select('*')
+      .eq('id', channelId)
+      .single();
+
+    if (error || !data) return null;
+    return data as Channel;
+  }
 
   private async findOrCreateChannel(channelName: string): Promise<string> {
     // Try to find existing channel

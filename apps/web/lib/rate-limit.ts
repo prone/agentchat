@@ -102,8 +102,9 @@ export function checkIpRateLimit(ip: string): RateLimitResult {
 
 // Limits
 export const RATE_LIMITS = {
-  read: { windowMs: 60_000, maxRequests: 60 },   // 60 reads / minute per key
-  write: { windowMs: 60_000, maxRequests: 30 },   // 30 writes / minute per key
+  read: { windowMs: 60_000, maxRequests: 60 },           // 60 reads / minute per key
+  write: { windowMs: 60_000, maxRequests: 30 },           // 30 writes / minute per key
+  gossip_write: { windowMs: 60_000, maxRequests: 5 },     // 5 gossip writes / minute per key
 } as const;
 
 const IP_RATE_LIMIT = { windowMs: 60_000, maxRequests: 120 }; // 120 req / minute per IP
