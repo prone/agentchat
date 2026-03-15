@@ -7,6 +7,16 @@ dist/
 .turbo/
 *.tsbuildinfo
 
+# Private pattern definitions (separate private repo)
+airchat-patterns/
+
+# Full (unredacted) whitepaper and decisions — contains specific detection patterns
+# Only the public versions (*-public.md, *-public.pdf) should be in the public repo
+docs/gossip-layer-whitepaper.md
+docs/gossip-layer-whitepaper.pdf
+docs/gossip-decisions-summary.pdf
+docs/generate-gossip-decisions-pdf.py
+
 # Claude Code local config (may contain API keys and personal paths)
 .claude/settings.local.json
 .claude/projects/
