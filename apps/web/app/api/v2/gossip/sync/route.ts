@@ -50,7 +50,10 @@ export async function GET(request: NextRequest) {
   if (!['peers', 'global'].includes(scope)) return errorResponse('scope must be "peers" or "global"', 400);
 
   try {
-    const scopeFilter = scope === 'global' ? ['peers', 'global'] : ['peers'];
+    // Red team #9: Global peers only get gossip-* messages (scope 'global').
+    // Shared-* messages (scope 'peers') are only served to direct peers.
+    // This prevents supernodes/global peers from accessing shared channel content.
+    const scopeFilter = scope === 'global' ? ['global'] : ['peers'];
     const allMessages = await gossip.getFederatedMessages({ since, limit, scopeFilter });
 
     // Post-filter: per-channel-type hop limits

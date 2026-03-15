@@ -226,35 +226,42 @@ async function processInboundMessage(
   const maxHops = channelName.startsWith('gossip-') ? 3 : 1;
   if (rawHopCount > maxHops) return 'rejected';
 
-  // Verify envelope signature if present
+  // Red team #1: Envelope signatures are MANDATORY. Reject unsigned messages.
   const envelopeSignature = raw.signature as string | undefined;
   const originPublicKey = raw.origin_public_key as string | undefined;
-  if (envelopeSignature && originPublicKey) {
-    const envelope: GossipEnvelope = {
-      message_id: remoteMessageId,
-      channel_name: channelName,
-      origin_instance: originInstance ?? peer.fingerprint,
-      author_agent: authorDisplay ?? '',
-      content,
-      metadata,
-      created_at: createdAt,
-      signature: envelopeSignature,
-      hop_count: rawHopCount,
-      safety_labels: (raw.safety_labels as string[]) ?? [],
-      federation_scope: channelName.startsWith('gossip-') ? 'global' : 'peers',
-    };
-    if (!verifyEnvelope(originPublicKey, envelope)) return 'rejected';
+  if (!envelopeSignature || !originPublicKey) {
+    return 'rejected'; // No signature = no trust
   }
+  const envelope: GossipEnvelope = {
+    message_id: remoteMessageId,
+    channel_name: channelName,
+    origin_instance: originInstance ?? peer.fingerprint,
+    author_agent: authorDisplay ?? '',
+    content,
+    metadata,
+    created_at: createdAt,
+    signature: envelopeSignature,
+    hop_count: rawHopCount,
+    safety_labels: (raw.safety_labels as string[]) ?? [],
+    federation_scope: channelName.startsWith('gossip-') ? 'global' : 'peers',
+  };
+  if (!verifyEnvelope(originPublicKey, envelope)) return 'rejected';
 
   // Agent quarantine check (persistent — survives restarts)
   const agentKey = `${authorDisplay}@${originInstance ?? peer.fingerprint}`;
   if (await gossip.isAgentQuarantined(agentKey)) return 'rejected';
 
+  // Red team #8: Enforce channel namespace — federated messages can ONLY target
+  // gossip-* or shared-* channels. Reject any attempt to inject into local channels.
+  if (!channelName.startsWith('gossip-') && !channelName.startsWith('shared-')) {
+    return 'rejected'; // Prevents injection into 'general', 'project-foo', etc.
+  }
+
   // Classify
   const classification = classifyMessage(content, metadata, patterns);
   const isQuarantined = classification.label === 'quarantined';
 
-  // Find or create channel
+  // Find or create channel (only federated types reach here)
   const type = channelName.startsWith('gossip-') ? 'gossip' : 'shared';
   const scope = channelName.startsWith('gossip-') ? 'global' : 'peers';
   const channelId = await gossip.findOrCreateChannelId(channelName, type, scope);
@@ -344,14 +351,23 @@ async function processInboundMessage(
 
 async function processRetraction(retraction: RetractionEnvelope, gossip: GossipStorageAdapter): Promise<void> {
   if (!retraction.retracted_by || !retraction.signature) return;
-
-  // H5: Validate retracted_message_id is a valid UUID
   if (!UUID_RE.test(retraction.retracted_message_id)) return;
 
-  const peer = await gossip.getPeerByFingerprint(retraction.retracted_by);
-  if (!peer?.public_key) return;
+  // Verify signature
+  const retractingPeer = await gossip.getPeerByFingerprint(retraction.retracted_by);
+  if (!retractingPeer?.public_key) return;
+  if (!verifyRetraction(retractingPeer.public_key, retraction)) return;
 
-  if (!verifyRetraction(peer.public_key, retraction)) return;
+  // Red team #5: Only accept retractions from supernodes or the message's origin.
+  // Regular peers can only retract messages they originated.
+  // Supernodes can retract any message (they are trusted relay infrastructure).
+  if (retractingPeer.peer_type !== 'supernode') {
+    // Check if the retracted message originated from this peer
+    const idSuffix = retraction.retracted_message_id.replace(/^[0-9a-f]{8}-/, '');
+    const localId = `${retractingPeer.fingerprint.slice(0, 8)}-${idSuffix}`;
+    const exists = await gossip.messageExists(localId);
+    if (!exists) return; // Peer trying to retract a message it didn't originate — reject
+  }
 
   await gossip.storeRetraction({
     retracted_message_id: retraction.retracted_message_id,
