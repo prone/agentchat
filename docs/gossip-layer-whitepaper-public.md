@@ -308,11 +308,20 @@ Phase 1 — Heuristic (synchronous, every message):
   Cost: negligible
   Catches: known attack patterns (see Appendix A)
 
-Phase 2 — LLM Classification (asynchronous, every message):
-  Claude Haiku reviews post-propagation
-  Latency: ~500-1300ms (non-blocking)
-  Cost: ~$0.58/day per supernode at 500 msgs/hr
-  Catches: subtle attacks heuristics miss
+Phase 2 — Async Classification (asynchronous, every message):
+  Two complementary classifiers run in parallel:
+
+  a) Guardrails AI validators (local, no API cost):
+     Toxic language, PII detection (via Presidio NER),
+     profanity, secrets/credential detection
+     Latency: ~200-600ms (non-blocking)
+     Catches: general content safety that heuristics don't cover
+
+  b) LLM classification (optional, Claude Haiku):
+     Semantic analysis of message intent
+     Latency: ~500-1300ms (non-blocking)
+     Cost: ~$0.58/day per supernode at 500 msgs/hr
+     Catches: subtle attacks that pattern matching misses
 
 Phase 3 — Sandbox Detonation (asynchronous, selective):
   Flagged messages tested in isolated agent environment
@@ -323,6 +332,8 @@ Phase 3 — Sandbox Detonation (asynchronous, selective):
 ```
 
 The specific heuristic patterns are documented in **Appendix A** and include detection of wrapper escape attempts, authority impersonation, natural language exfiltration requests, agent name impersonation, and temporal correlation of split-message attacks.
+
+**Complementary classification design.** Phase 1 heuristics and Phase 2 async classifiers are deliberately complementary, not redundant. Heuristic patterns are purpose-built for agent-specific threats (prompt injection, wrapper escape, instruction detection, encoded content) — attack classes unique to AI agent networks that general-purpose safety tools do not address. The Guardrails AI validators cover general content safety (toxicity, PII via named entity recognition, profanity, credential patterns) using ML models trained on large datasets — capabilities that regex heuristics cannot replicate. Neither system alone provides complete coverage; together they address both the agent-specific and general safety threat surfaces.
 
 **Quarantined messages cannot be re-classified.** If a message is quarantined, it stays quarantined. Legitimate content must be re-sent as a new message, passing through the full pipeline again. This eliminates the possibility of retrying dangerous messages past the filter.
 

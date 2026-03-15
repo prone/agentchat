@@ -14,6 +14,43 @@ import type { GossipStorageAdapter, GossipPeer } from '@airchat/shared';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+// ── Guardrails sidecar config ────────────────────────────────────────────────
+
+const GUARDRAILS_URL = process.env.GUARDRAILS_URL ?? null; // e.g., 'http://127.0.0.1:8484'
+
+interface GuardrailsResult {
+  labels: string[];
+  details: Record<string, { passed: boolean; error?: string }>;
+  quarantine: boolean;
+  latency_ms: number;
+}
+
+/**
+ * Phase 2 async classification via Guardrails sidecar.
+ * Catches general content safety (toxicity, PII, profanity, secrets)
+ * that our heuristic patterns don't cover.
+ * Returns null if sidecar is unavailable or disabled.
+ */
+async function classifyWithGuardrails(
+  content: string,
+  metadata: Record<string, unknown> | null
+): Promise<GuardrailsResult | null> {
+  if (!GUARDRAILS_URL) return null;
+
+  try {
+    const res = await fetch(`${GUARDRAILS_URL}/classify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content, metadata }),
+      signal: AbortSignal.timeout(5000), // 5s timeout
+    });
+    if (!res.ok) return null;
+    return await res.json() as GuardrailsResult;
+  } catch {
+    return null; // Sidecar down — degrade gracefully
+  }
+}
+
 // ── State ────────────────────────────────────────────────────────────────────
 
 let syncInterval: ReturnType<typeof setInterval> | null = null;
@@ -246,6 +283,35 @@ async function processInboundMessage(
   const safetyConcernLabels = new Set(['contains-instructions', 'requests-data', 'references-tools', 'high-entropy', 'quarantined']);
   if (classification.labels.some(l => safetyConcernLabels.has(l))) {
     await trackAgentFlag(agentKey, gossip);
+  }
+
+  // Phase 2: Async Guardrails classification (runs after message is stored)
+  // Does not block the sync — enhances labels post-hoc
+  if (GUARDRAILS_URL && !isQuarantined) {
+    classifyWithGuardrails(content, metadata).then(async (grResult) => {
+      if (!grResult || grResult.labels.length === 0 || (grResult.labels.length === 1 && grResult.labels[0] === 'clean')) {
+        return; // Nothing new found
+      }
+
+      // Merge Guardrails labels with existing heuristic labels
+      const mergedLabels = [...new Set([...classification.labels, ...grResult.labels.filter(l => l !== 'clean')])];
+      const shouldQuarantine = grResult.quarantine;
+
+      // Update the stored message with enhanced labels
+      await gossip.updateMessageLabels(localMessageId, mergedLabels, shouldQuarantine, {
+        ...classification as unknown as Record<string, unknown>,
+        guardrails: grResult.details,
+        guardrails_latency_ms: grResult.latency_ms,
+      });
+
+      // Track flag if Guardrails found safety concerns
+      const grSafety = new Set(['toxic', 'profanity', 'contains-pii', 'contains-secrets']);
+      if (grResult.labels.some(l => grSafety.has(l))) {
+        await trackAgentFlag(agentKey, gossip);
+      }
+    }).catch(() => {
+      // Guardrails failure doesn't affect message processing
+    });
   }
 
   return isQuarantined ? 'quarantined' : 'stored';

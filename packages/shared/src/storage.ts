@@ -254,6 +254,9 @@ export interface GossipStorageAdapter {
   /** Store a retraction if not already stored. */
   storeRetraction(retraction: GossipRetraction): Promise<void>;
 
+  /** Update safety labels on a message (used by async Phase 2 classification). */
+  updateMessageLabels(messageId: string, labels: string[], quarantine: boolean, classification: Record<string, unknown>): Promise<void>;
+
   /** Quarantine a message by ID (exact match). */
   quarantineMessage(messageId: string): Promise<void>;
 

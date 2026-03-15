@@ -284,6 +284,17 @@ export class SupabaseGossipAdapter implements GossipStorageAdapter {
     }
   }
 
+  async updateMessageLabels(messageId: string, labels: string[], quarantine: boolean, classification: Record<string, unknown>): Promise<void> {
+    await this.client
+      .from('messages')
+      .update({
+        safety_labels: labels,
+        quarantined: quarantine,
+        classification,
+      })
+      .eq('id', messageId);
+  }
+
   async quarantineMessage(messageId: string): Promise<void> {
     await this.client
       .from('messages')
