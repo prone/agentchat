@@ -236,7 +236,7 @@ async function processInboundMessage(
 
   // Hop limit
   const maxHops = channelName.startsWith('gossip-') ? 3 : 1;
-  if (rawHopCount > maxHops) return 'rejected';
+  if (rawHopCount > maxHops) { console.log(`[gossip] REJECT ${remoteMessageId.slice(0,8)}: hop limit (${rawHopCount}>${maxHops})`); return 'rejected'; }
 
   // Red team #1: Envelope signatures are MANDATORY. Reject unsigned messages.
   const envelopeSignature = raw.signature as string | undefined;
@@ -267,7 +267,7 @@ async function processInboundMessage(
   // Red team #8: Enforce channel namespace — federated messages can ONLY target
   // gossip-* or shared-* channels. Reject any attempt to inject into local channels.
   if (!channelName.startsWith('gossip-') && !channelName.startsWith('shared-')) {
-    return 'rejected'; // Prevents injection into 'general', 'project-foo', etc.
+    console.log(`[gossip] REJECT ${remoteMessageId.slice(0,8)}: channel namespace (${channelName})`); return 'rejected';
   }
 
   // Classify
@@ -278,7 +278,7 @@ async function processInboundMessage(
   const type = channelName.startsWith('gossip-') ? 'gossip' : 'shared';
   const scope = channelName.startsWith('gossip-') ? 'global' : 'peers';
   const channelId = await gossip.findOrCreateChannelId(channelName, type, scope);
-  if (!channelId) return 'rejected';
+  if (!channelId) { console.log(`[gossip] REJECT ${remoteMessageId.slice(0,8)}: channel creation failed (${channelName})`); return 'rejected'; }
 
   // Find or create remote agent
   const agentId = await gossip.findOrCreateRemoteAgent(
@@ -286,7 +286,7 @@ async function processInboundMessage(
     peer.fingerprint,
     originInstance
   );
-  if (!agentId) return 'rejected';
+  if (!agentId) { console.log(`[gossip] REJECT ${remoteMessageId.slice(0,8)}: agent creation failed`); return 'rejected'; }
 
   // Store
   const stored = await gossip.insertFederatedMessage({
@@ -308,7 +308,7 @@ async function processInboundMessage(
     created_at: createdAt,
   });
 
-  if (!stored) return 'rejected';
+  if (!stored) { console.log(`[gossip] REJECT ${remoteMessageId.slice(0,8)}: storage failed`); return 'rejected'; }
 
   await gossip.trackMessageOrigin(localMessageId, peer.id, originInstance ?? peer.fingerprint);
 
