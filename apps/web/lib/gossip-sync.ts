@@ -140,7 +140,9 @@ async function syncFromPeer(peerId: string): Promise<void> {
       return;
     }
 
-    const data = await res.json() as {
+    const raw = await res.json();
+    // Unwrap AirChat response envelope if present
+    const data = (raw.data ?? raw) as {
       messages: Array<Record<string, unknown>>;
       retractions: RetractionEnvelope[];
       sync_timestamp: string;
