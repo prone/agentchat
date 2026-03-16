@@ -204,6 +204,7 @@ async function processInboundMessage(
   const rawHopCount = raw.hop_count;
   const createdAt = raw.created_at as string;
 
+  console.log(`[gossip] inbound: id=${remoteMessageId?.slice(0,8)} ch=${channelName} content=${!!content} hop=${rawHopCount} sig=${!!raw.signature} opk=${!!raw.origin_public_key}`);
   if (!remoteMessageId || !channelName || !content) { console.log(`[gossip] REJECT ${remoteMessageId?.slice(0,8)}: missing id/channel/content (ch=${channelName})`); return 'rejected'; }
 
   // Fix #56: Validate remoteMessageId is a UUID
