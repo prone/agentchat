@@ -451,6 +451,21 @@ export function startSyncWorker(): void {
   syncLoop().catch(console.error);
 }
 
+/**
+ * Lazily start the sync worker if gossip is enabled.
+ * Safe to call from any route — only starts once.
+ */
+export async function ensureSyncWorker(): Promise<void> {
+  if (syncInterval) return;
+  try {
+    const gossip = getGossipAdapter();
+    const config = await gossip.getInstanceConfig();
+    if (config?.gossip_enabled) {
+      startSyncWorker();
+    }
+  } catch { /* not ready yet */ }
+}
+
 export function stopSyncWorker(): void {
   if (syncInterval) { clearInterval(syncInterval); syncInterval = null; }
 }

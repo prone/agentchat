@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { jsonResponse, errorResponse } from '@/lib/api-v1-response';
 import { authenticateAgent, isAuthError, getGossipAdapter } from '@/lib/api-v2-auth';
+import { ensureSyncWorker, startSyncWorker } from '@/lib/gossip-sync';
 
 // Default supernodes shipped with AirChat (with pinned fingerprints)
 const DEFAULT_SUPERNODES = [
@@ -41,6 +42,9 @@ export async function POST(request: NextRequest) {
         });
       }
 
+      // Start sync worker now that gossip is enabled
+      startSyncWorker();
+
       return jsonResponse({
         gossip_enabled: true,
         default_supernodes: DEFAULT_SUPERNODES.map((s) => s.endpoint),
@@ -60,6 +64,9 @@ export async function GET(request: NextRequest) {
   if (isAuthError(auth)) return auth;
 
   try {
+    // Lazily start the sync worker on first status check
+    await ensureSyncWorker();
+
     const gossip = getGossipAdapter();
     const config = await gossip.getInstanceConfig();
     const peers = await gossip.listPeers();
