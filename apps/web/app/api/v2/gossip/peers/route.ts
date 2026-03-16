@@ -61,7 +61,11 @@ export async function POST(request: NextRequest) {
     let remoteIdentity: { public_key: string; fingerprint: string; display_name?: string } | null = null;
     try {
       const res = await fetch(`${endpoint.replace(/\/$/, '')}/api/v2/gossip/identity`);
-      if (res.ok) remoteIdentity = await res.json();
+      if (res.ok) {
+        const json = await res.json();
+        // Identity endpoint uses AirChat response wrapper — data is in .data
+        remoteIdentity = json.data ?? json;
+      }
     } catch { /* Remote not reachable — verify on first sync */ }
 
     if (remoteIdentity && remoteIdentity.fingerprint !== fingerprint) {
