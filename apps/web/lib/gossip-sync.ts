@@ -450,6 +450,103 @@ async function syncLoop(): Promise<void> {
   }
 }
 
+// ── Process inbound messages (shared between pull-sync and push) ─────────────
+
+/**
+ * Process an array of inbound messages from a peer.
+ * Used by both the pull-sync loop and the push endpoint.
+ */
+export async function processInboundMessages(
+  messages: Array<Record<string, unknown>>,
+  peer: GossipPeer,
+  gossip: GossipStorageAdapter
+): Promise<{ stored: number; quarantined: number }> {
+  if (!patternSet) patternSet = loadPatternSet();
+
+  let stored = 0;
+  let quarantined = 0;
+
+  for (const msg of messages) {
+    const result = await processInboundMessage(msg, peer, gossip, patternSet);
+    if (result === 'stored') stored++;
+    if (result === 'quarantined') { stored++; quarantined++; }
+  }
+
+  return { stored, quarantined };
+}
+
+// ── Outbound push to supernodes ──────────────────────────────────────────────
+
+/**
+ * Push a newly posted message to all active supernode peers.
+ * Called after a message is posted to a gossip-* or shared-* channel.
+ * Runs async (fire-and-forget) — does not block the message POST response.
+ */
+export async function pushMessageToSupernodes(message: {
+  id: string;
+  content: string;
+  channel_name: string;
+  author_name: string;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+}): Promise<void> {
+  const gossip = getGossipAdapter();
+  const config = await gossip.getInstanceConfig();
+  if (!config?.gossip_enabled) return;
+
+  const privateKey = await getPrivateKey();
+  if (!privateKey) return;
+
+  const peers = await gossip.listPeers();
+  const supernodes = peers.filter(
+    (p: { peer_type: string; active: boolean; suspended: boolean }) =>
+      p.peer_type === 'supernode' && p.active && !p.suspended
+  );
+  if (supernodes.length === 0) return;
+
+  // Build and sign the envelope
+  const { signEnvelope } = await import('@airchat/shared/gossip');
+  const envelope = signEnvelope(privateKey, {
+    message_id: message.id,
+    channel_name: message.channel_name,
+    origin_instance: config.fingerprint,
+    author_agent: message.author_name,
+    content: message.content,
+    metadata: message.metadata,
+    created_at: message.created_at,
+    hop_count: 0,
+    safety_labels: [],
+    federation_scope: message.channel_name.startsWith('gossip-') ? 'global' : 'peers',
+  });
+
+  // Sign a timestamp for auth
+  const { signData } = await import('@airchat/shared/gossip');
+  const timestamp = new Date().toISOString();
+  const authSignature = signData(privateKey, timestamp);
+
+  // Push to each supernode in parallel
+  await Promise.allSettled(supernodes.map(async (peer: GossipPeer) => {
+    try {
+      const res = await fetch(`${peer.endpoint}/api/v2/gossip/push`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-gossip-fingerprint': config.fingerprint,
+          'x-gossip-timestamp': timestamp,
+          'x-gossip-signature': authSignature,
+        },
+        body: JSON.stringify({ messages: [{ ...envelope, origin_public_key: config.public_key }] }),
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!res.ok) {
+        console.log(`[gossip] Push to ${peer.display_name || peer.fingerprint}: HTTP ${res.status}`);
+      }
+    } catch {
+      // Push failures are non-fatal — supernode will pull on next sync cycle if reachable
+    }
+  }));
+}
+
 export function startSyncWorker(): void {
   if (syncInterval) return;
   console.log('[gossip] Sync worker started (polling every 30s)');

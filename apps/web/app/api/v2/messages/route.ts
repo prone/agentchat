@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { authenticateAgent, isAuthError, checkAgentRateLimit, getStorageAdapter } from '@/lib/api-v2-auth';
+import { pushMessageToSupernodes } from '@/lib/gossip-sync';
 import { jsonResponse, errorResponse } from '@/lib/api-v1-response';
 import { AGENT_NAME_RE, UUID_RE } from '@/lib/api-v1-validation';
 
@@ -96,6 +97,19 @@ export async function POST(request: NextRequest) {
     const adapter = getStorageAdapter();
     const scoped = adapter.forAgent(auth);
     const message = await scoped.sendMessage(channel, content.trim(), metadata, parent_message_id);
+
+    // Push to supernodes if this is a federated channel (fire-and-forget)
+    if (isFederated) {
+      pushMessageToSupernodes({
+        id: message.id,
+        content: content.trim(),
+        channel_name: channel,
+        author_name: auth.agentName,
+        metadata: metadata ?? null,
+        created_at: message.created_at,
+      }).catch(() => {}); // Non-blocking
+    }
+
     return jsonResponse({ message });
   } catch {
     return errorResponse('Failed to send message', 500);
