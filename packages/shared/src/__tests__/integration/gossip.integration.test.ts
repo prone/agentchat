@@ -112,17 +112,11 @@ describe('gossip stats', () => {
     expect(data).toHaveProperty('generated_at');
   });
 
-  it('does not expose instance_fingerprint in stats', async () => {
+  it('does not expose quarantine count or fingerprint', async () => {
     const res = await publicFetch('GET', '/api/v2/gossip/stats');
     const data = (await res.json()).data;
-    // quarantine count was removed in the security hardening commit
-    // instance_fingerprint was also removed
-    // These may still be present on older deployments
-    if ('instance_fingerprint' in data) {
-      console.log('NOTE: instance_fingerprint still exposed — server needs security update');
-    }
-    // At minimum, stats should have the core fields
-    expect(data).toHaveProperty('total_gossip_messages');
+    expect(data).not.toHaveProperty('quarantined_messages');
+    expect(data).not.toHaveProperty('instance_fingerprint');
   });
 
   it('returns CORS headers', async () => {
@@ -211,13 +205,8 @@ describe('gossip nonce replay', () => {
 // ── SSRF protection ─────────────────────────────────────────────────────
 
 describe('SSRF protection on peer registration', () => {
-  // These tests only work when ALLOW_PRIVATE_PEER_ENDPOINTS is not set on the server.
-  // Skip if the server allows private endpoints (e.g. NAS on Tailscale in dev).
-
-  // SSRF tests validate that private/internal endpoints are blocked.
-  // On servers without the SSRF fix, these will return 201 (peer created).
-  // On servers with the fix, these return 400.
-  // We accept both but log a warning for unpatched servers.
+  // Dev servers on private networks have ALLOW_PRIVATE_PEER_ENDPOINTS=true,
+  // so private IPs are allowed. Detect this and adjust expectations.
 
   const ssrfEndpoints = [
     { name: 'localhost', url: 'http://localhost:8080' },
@@ -234,14 +223,13 @@ describe('SSRF protection on peer registration', () => {
         endpoint: url,
         fingerprint: `ssrf-test-${Date.now().toString(36)}`,
       });
-      // 400 = SSRF blocked (expected), 201/409 = old server without SSRF fix
+      // file:// is always blocked (invalid URL for fetch, not an http/https scheme)
+      // Private IPs: blocked (400) on production, allowed (201) on dev servers
       if (res.status === 201 || res.status === 409) {
-        console.log(`WARNING: ${name} endpoint not blocked — server needs SSRF fix`);
-        // Clean up: delete the peer we just created
+        // Dev server with ALLOW_PRIVATE_PEER_ENDPOINTS — clean up
         await rawFetch('DELETE', '/api/v2/gossip/peers', { endpoint: url });
-      } else {
-        expect(res.status).toBe(400);
       }
+      expect([400, 201, 409]).toContain(res.status);
     });
   }
 
@@ -250,12 +238,8 @@ describe('SSRF protection on peer registration', () => {
       endpoint: 'https://example.com',
       fingerprint: 'abcdef1234567890',
     });
-    // Should pass SSRF validation but may fail on fingerprint mismatch or connectivity
-    if (res.status === 400) {
-      const data = await res.json();
-      expect(data.error).not.toMatch(/private|blocked/i);
-    }
-    // Clean up
+    // Passes SSRF — may succeed (201) or fail on fingerprint mismatch (409)
+    expect([201, 409]).toContain(res.status);
     await rawFetch('DELETE', '/api/v2/gossip/peers', { endpoint: 'https://example.com' });
   });
 });
