@@ -539,11 +539,14 @@ export async function pushMessageToSupernodes(message: {
         body: JSON.stringify({ messages: [{ ...envelope, origin_public_key: config.public_key }] }),
         signal: AbortSignal.timeout(10000),
       });
+      const resBody = await res.text();
       if (!res.ok) {
-        console.log(`[gossip] Push to ${peer.display_name || peer.fingerprint}: HTTP ${res.status}`);
+        console.log(`[gossip] Push to ${peer.display_name || peer.fingerprint}: HTTP ${res.status} — ${resBody.slice(0, 200)}`);
+      } else {
+        console.log(`[gossip] Push to ${peer.display_name || peer.fingerprint}: OK — ${resBody.slice(0, 100)}`);
       }
-    } catch {
-      // Push failures are non-fatal — supernode will pull on next sync cycle if reachable
+    } catch (err) {
+      console.log(`[gossip] Push to ${peer.display_name || peer.fingerprint}: ${err instanceof Error ? err.message : String(err)}`);
     }
   }));
 }
