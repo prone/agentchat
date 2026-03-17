@@ -492,18 +492,17 @@ export async function pushMessageToSupernodes(message: {
 }): Promise<void> {
   const gossip = getGossipAdapter();
   const config = await gossip.getInstanceConfig();
-  if (!config?.gossip_enabled) { console.log('[gossip] Push skipped: gossip not enabled'); return; }
+  if (!config?.gossip_enabled) return;
 
   const privateKey = await getPrivateKey();
-  if (!privateKey) { console.log('[gossip] Push skipped: no private key'); return; }
+  if (!privateKey) return;
 
   const peers = await gossip.listPeers();
   const supernodes = peers.filter(
     (p: { peer_type: string; active: boolean; suspended: boolean }) =>
       p.peer_type === 'supernode' && p.active && !p.suspended
   );
-  if (supernodes.length === 0) { console.log('[gossip] Push skipped: no active supernodes'); return; }
-  console.log(`[gossip] Pushing to ${supernodes.length} supernode(s)`);
+  if (supernodes.length === 0) return;
 
   // Build and sign the envelope
   const { signEnvelope } = await import('@airchat/shared/gossip');
@@ -539,14 +538,11 @@ export async function pushMessageToSupernodes(message: {
         body: JSON.stringify({ messages: [{ ...envelope, origin_public_key: config.public_key }] }),
         signal: AbortSignal.timeout(10000),
       });
-      const resBody = await res.text();
       if (!res.ok) {
-        console.log(`[gossip] Push to ${peer.display_name || peer.fingerprint}: HTTP ${res.status} — ${resBody.slice(0, 200)}`);
-      } else {
-        console.log(`[gossip] Push to ${peer.display_name || peer.fingerprint}: OK — ${resBody.slice(0, 100)}`);
+        console.log(`[gossip] Push to ${peer.display_name || peer.fingerprint}: HTTP ${res.status}`);
       }
-    } catch (err) {
-      console.log(`[gossip] Push to ${peer.display_name || peer.fingerprint}: ${err instanceof Error ? err.message : String(err)}`);
+    } catch {
+      // Push failures are non-fatal
     }
   }));
 }
