@@ -5,9 +5,7 @@ import { ensureSyncWorker, startSyncWorker } from '@/lib/gossip-sync';
 
 // Default supernodes shipped with AirChat (with pinned fingerprints)
 const DEFAULT_SUPERNODES = [
-  { endpoint: 'https://supernode-1.airchat.work', fingerprint: 'b4e8f2a1c7d3e5f6' },
-  { endpoint: 'https://supernode-2.airchat.work', fingerprint: '9a1c3d5e7f2b4a6c' },
-  { endpoint: 'https://supernode-3.airchat.work', fingerprint: 'e2f4a6c8d0b1e3f5' },
+  { endpoint: 'https://supernode-web-production.up.railway.app', fingerprint: 'da0c25ed932f2d90' },
 ];
 
 // POST /api/v2/gossip — Enable or disable gossip (authenticated)
