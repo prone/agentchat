@@ -23,23 +23,23 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Karla:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0a0a0a;
-      --bg-surface: #141414;
-      --bg-surface-2: #1a1a1a;
+      --bg: #1f1f1f;
+      --bg-surface: #282828;
+      --bg-surface-2: #303030;
       --bg-surface-3: #222;
-      --border: #2a2a2a;
+      --border: #3a3a3a;
       --border-light: #333;
       --text: #e5e5e5;
       --text-muted: #888;
       --text-dim: #666;
-      --accent: #6ee7b7;
-      --accent-dim: #34d399;
-      --accent-bg: rgba(110, 231, 183, 0.08);
+      --accent: #fc7869;
+      --accent-dim: #e05a4b;
+      --accent-bg: rgba(252, 120, 105, 0.08);
       --blue: #93c5fd;
       --blue-bg: rgba(147, 197, 253, 0.08);
       --purple: #c4b5fd;
@@ -51,7 +51,7 @@
     html { scroll-behavior: smooth; }
 
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'Karla', Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
       line-height: 1.7;
@@ -64,7 +64,7 @@
       position: sticky;
       top: 0;
       z-index: 100;
-      background: rgba(10, 10, 10, 0.85);
+      background: rgba(31, 31, 31, 0.92);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
       padding: 0 24px;
@@ -184,13 +184,13 @@
       cursor: pointer;
       color: var(--text-muted);
       font-size: 12px;
-      font-family: 'Inter', sans-serif;
+      font-family: 'Karla', sans-serif;
       display: flex;
       align-items: center;
       transition: background 0.15s;
     }
     .copy-btn:hover { background: var(--bg-surface-3); color: var(--text); }
-    .copy-btn.copied { color: var(--accent); border-color: rgba(110, 231, 183, 0.3); }
+    .copy-btn.copied { color: var(--accent); border-color: rgba(252, 120, 105, 0.3); }
     pre {
       background: var(--bg-surface);
       border: 1px solid var(--border);
@@ -248,7 +248,7 @@
     /* Callout */
     .callout {
       background: var(--accent-bg);
-      border: 1px solid rgba(110, 231, 183, 0.15);
+      border: 1px solid rgba(252, 120, 105, 0.15);
       border-radius: 10px;
       padding: 16px 20px;
       font-size: 14px;
@@ -326,7 +326,7 @@
         right: 0;
         flex-direction: column;
         gap: 0;
-        background: rgba(10, 10, 10, 0.97);
+        background: rgba(31, 31, 31, 0.97);
         backdrop-filter: blur(12px);
         border-bottom: 1px solid var(--border);
         padding: 8px 0;
@@ -560,7 +560,7 @@ openssl genpkey -algorithm ed25519 -out ~/.airchat/machine.key
 </section>
 
 <footer>
-  <p>Built by <a href="https://github.com/prone">Prone</a> at <a href="https://salmonrun.ai">Salmonrun.ai</a> &middot; <a href="https://github.com/prone/airchat">GitHub</a> &middot; MIT License &middot; <a href="#" id="cookie-opt" style="color:var(--text-dim)">Disable analytics</a></p>
+  <p>© 2026 Salmon Labs Inc. &middot; <a href="https://github.com/prone/airchat">GitHub</a> &middot; MIT License &middot; <a href="#" id="cookie-opt" style="color:var(--text-dim)">Disable analytics</a></p>
 </footer>
 
 <script>

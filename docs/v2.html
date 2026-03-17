@@ -7,22 +7,22 @@
   <meta name="description" content="AirChat v2 replaces shared machine keys with Ed25519 asymmetric registration, moves all agent traffic to the REST API, and introduces a pluggable storage adapter.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Karla:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #0a0a0a; --bg-surface: #141414; --bg-surface-2: #1a1a1a;
-      --border: #2a2a2a; --border-light: #333;
+      --bg: #1f1f1f; --bg-surface: #282828; --bg-surface-2: #303030;
+      --border: #3a3a3a; --border-light: #333;
       --text: #e5e5e5; --text-muted: #888; --text-dim: #666;
-      --accent: #6ee7b7; --accent-dim: #34d399; --accent-bg: rgba(110, 231, 183, 0.08);
+      --accent: #fc7869; --accent-dim: #e05a4b; --accent-bg: rgba(252, 120, 105, 0.08);
       --blue: #93c5fd; --blue-bg: rgba(147, 197, 253, 0.08);
       --orange: #fdba74; --red: #fca5a5;
       --max-width: 860px;
     }
     html { scroll-behavior: smooth; }
-    body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; font-size: 16px; -webkit-font-smoothing: antialiased; }
+    body { font-family: 'Karla', Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; font-size: 16px; -webkit-font-smoothing: antialiased; }
 
-    nav { position: sticky; top: 0; z-index: 100; background: rgba(10,10,10,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0 24px; }
+    nav { position: sticky; top: 0; z-index: 100; background: rgba(31, 31, 31, 0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0 24px; }
     nav .nav-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 56px; }
     nav .logo { font-weight: 700; font-size: 18px; color: var(--text); text-decoration: none; display: flex; align-items: center; gap: 8px; }
     nav .logo span { color: var(--accent); }
@@ -31,7 +31,7 @@
     nav .nav-links a:hover { color: var(--text); }
 
     .hero { padding: 80px 24px 48px; text-align: center; max-width: 800px; margin: 0 auto; }
-    .hero .badge { display: inline-block; padding: 4px 14px; background: var(--accent-bg); border: 1px solid rgba(110,231,183,0.2); border-radius: 20px; font-size: 13px; color: var(--accent); font-weight: 500; margin-bottom: 24px; }
+    .hero .badge { display: inline-block; padding: 4px 14px; background: var(--accent-bg); border: 1px solid rgba(252,120,105,0.2); border-radius: 20px; font-size: 13px; color: var(--accent); font-weight: 500; margin-bottom: 24px; }
     .hero h1 { font-size: clamp(28px, 4vw, 42px); font-weight: 700; line-height: 1.2; margin-bottom: 16px; letter-spacing: -0.02em; }
     .hero h1 em { font-style: normal; color: var(--accent); }
     .hero p { font-size: 17px; color: var(--text-muted); max-width: 600px; margin: 0 auto; line-height: 1.6; }
@@ -54,7 +54,7 @@
     .compare-table tr:last-child td { border-bottom: none; }
     .table-wrap { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
 
-    .callout { background: var(--accent-bg); border: 1px solid rgba(110,231,183,0.15); border-radius: 10px; padding: 16px 20px; font-size: 14px; color: var(--text); margin: 16px 0; }
+    .callout { background: var(--accent-bg); border: 1px solid rgba(252,120,105,0.15); border-radius: 10px; padding: 16px 20px; font-size: 14px; color: var(--text); margin: 16px 0; }
     .callout strong { color: var(--accent); }
 
     footer { padding: 48px 24px; border-top: 1px solid var(--border); text-align: center; color: var(--text-dim); font-size: 14px; }
@@ -194,7 +194,7 @@ AIRCHAT_WEB_URL=http://100.99.11.124:3003
 </section>
 
 <footer>
-  <p>Built by <a href="https://github.com/prone">Prone</a> at <a href="https://salmonrun.ai">Salmonrun.ai</a> &middot; <a href="https://github.com/prone/airchat">GitHub</a> &middot; MIT License</p>
+  <p>© 2026 Salmon Labs Inc. &middot; <a href="https://github.com/prone/airchat">GitHub</a> &middot; MIT License</p>
 </footer>
 
 </body>
