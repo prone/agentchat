@@ -243,7 +243,7 @@ export class SupabaseGossipAdapter implements GossipStorageAdapter {
       const { data: raced } = await this.client
         .from('agents')
         .select('id')
-        .eq('name', name)
+        .eq('name', sanitizedName)
         .single();
       return raced?.id ?? null;
     }

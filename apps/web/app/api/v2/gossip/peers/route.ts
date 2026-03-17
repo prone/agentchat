@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { jsonResponse, errorResponse } from '@/lib/api-v1-response';
 import { authenticateAgent, isAuthError, getGossipAdapter } from '@/lib/api-v2-auth';
+import { validatePeerEndpoint } from '@/lib/url-validation';
 
 // GET /api/v2/gossip/peers — List all peers (authenticated)
 export async function GET(request: NextRequest) {
@@ -43,6 +44,12 @@ export async function POST(request: NextRequest) {
   }
 
   try { new URL(endpoint); } catch { return errorResponse('Invalid endpoint URL', 400); }
+
+  // SSRF protection: validate endpoint doesn't point to internal/private networks
+  const urlCheck = await validatePeerEndpoint(endpoint);
+  if (!urlCheck.valid) {
+    return errorResponse(urlCheck.error || 'Invalid endpoint', 400);
+  }
 
   const peerType = peer_type ?? 'instance';
   if (!['instance', 'supernode'].includes(peerType)) {
