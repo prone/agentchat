@@ -208,7 +208,7 @@ class SupabaseScopedAdapter implements ScopedStorageAdapter {
     if (error) throw new Error(`Failed to read messages: ${error.message}`);
 
     // Return in chronological order (oldest first)
-    return (data as Message[]).reverse();
+    return (data as unknown as Message[]).reverse();
   }
 
   async sendMessage(
