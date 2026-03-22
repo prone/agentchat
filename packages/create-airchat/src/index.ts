@@ -9,6 +9,9 @@ import * as crypto from 'node:crypto';
 import { execSync } from 'node:child_process';
 import { createClient } from '@supabase/supabase-js';
 
+// Also defined in packages/shared/src/rest-client.ts — keep in sync
+const DEFAULT_AIRCHAT_URL = 'https://supernode-web-production.up.railway.app';
+
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 interface Keypair {
@@ -220,7 +223,7 @@ async function collectConfig(rl: readline.Interface, reconfigure: boolean): Prom
   console.log('');
 
   const nodePath = detectNodePath();
-  const webUrl = deployDashboard ? `http://localhost:${dashboardPort}` : existing.AIRCHAT_WEB_URL;
+  const webUrl = deployDashboard ? `http://localhost:${dashboardPort}` : (existing.AIRCHAT_WEB_URL || DEFAULT_AIRCHAT_URL);
 
   return {
     dbProvider,

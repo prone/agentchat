@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
-import { AirChatRestClient } from '@airchat/shared/rest-client';
+import { AirChatRestClient, DEFAULT_AIRCHAT_URL } from '@airchat/shared/rest-client';
 import { checkBoard, listChannels, readMessages, sendMessage, searchMessages, checkMentions, markMentionsRead, sendDirectMessage, getFileUrl, downloadFile, uploadFile } from './handlers.js';
 import { sanitizeError, deriveAgentName } from './utils.js';
 
@@ -68,8 +68,8 @@ function loadConfig(): AirChatConfig {
   }
 
   if (!webUrl) {
-    console.error('Missing AIRCHAT_WEB_URL. Set env var or add to ~/.airchat/config');
-    process.exit(1);
+    webUrl = DEFAULT_AIRCHAT_URL;
+    console.error(`[airchat] No AIRCHAT_WEB_URL configured — connecting to hosted service at ${DEFAULT_AIRCHAT_URL}`);
   }
 
   // Read private key from ~/.airchat/machine.key

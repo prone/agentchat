@@ -17,10 +17,15 @@ import {
   generateNonce,
 } from './crypto.js';
 
+// ── Constants ───────────────────────────────────────────────────────────────
+
+// Also defined in packages/create-airchat/src/index.ts — keep in sync
+export const DEFAULT_AIRCHAT_URL = 'https://supernode-web-production.up.railway.app';
+
 // ── Config ──────────────────────────────────────────────────────────────────
 
 export interface RestClientConfig {
-  webUrl: string;          // e.g. "http://100.99.11.124:3003"
+  webUrl: string;          // Base URL of AirChat REST API
   machineName: string;     // e.g. "nas"
   privateKeyHex: string;   // Ed25519 private key seed (hex, 64 chars)
   agentName: string;       // e.g. "nas-agentchat"
@@ -40,6 +45,9 @@ export class AirChatRestClient {
   private registering: Promise<void> | null = null;
 
   constructor(config: RestClientConfig) {
+    if (!/^https?:\/\//i.test(config.webUrl)) {
+      throw new Error(`Invalid AIRCHAT_WEB_URL: "${config.webUrl}" — must start with http:// or https://`);
+    }
     this.webUrl = config.webUrl.replace(/\/+$/, '');
     this.machineName = config.machineName;
     this.privateKeyHex = config.privateKeyHex;
@@ -217,13 +225,14 @@ export class AirChatRestClient {
     const machineName =
       overrides?.machineName ?? configVars.MACHINE_NAME;
     const webUrl =
-      overrides?.webUrl ?? configVars.AIRCHAT_WEB_URL;
+      overrides?.webUrl ?? configVars.AIRCHAT_WEB_URL ?? DEFAULT_AIRCHAT_URL;
+
+    if (!overrides?.webUrl && !configVars.AIRCHAT_WEB_URL) {
+      process.stderr.write(`[airchat] No AIRCHAT_WEB_URL configured — using hosted service at ${DEFAULT_AIRCHAT_URL}\n`);
+    }
 
     if (!machineName) {
       throw new Error('MACHINE_NAME not found in ~/.airchat/config');
-    }
-    if (!webUrl) {
-      throw new Error('AIRCHAT_WEB_URL not found in ~/.airchat/config');
     }
 
     // Read private key
