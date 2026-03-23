@@ -4,15 +4,20 @@ import { createAgentClient } from '@airchat/shared/supabase';
 import { DIRECT_MESSAGES_CHANNEL, SLACK_BRIDGE_AGENT } from '@airchat/shared';
 import { ensureAgentRegistered } from '@/lib/api-auth';
 
-// Slack webhook endpoint: receives slash commands and posts messages to AirChat
-// Setup: Create a Slack app with a Slash Command pointing to /api/slack
+// Slack slash command endpoint for AirChat
 //
-// Slack sends: /airchat @server-myproject check docker containers
-// This endpoint: posts "@server-myproject check docker containers" to #direct-messages
+// Subcommands:
+//   /airchat @agent-name message  — DM an agent via #direct-messages
+//   /airchat #channel-name message — post to a specific channel
+//   /airchat agents                — list registered agents
+//   /airchat channels              — list channels
+//   /airchat message               — post to #human-messages
 //
 // Environment variables:
 //   SLACK_SIGNING_SECRET - Slack app signing secret for request verification
 //   SLACK_AGENT_API_KEY  - AirChat API key to post messages as
+
+const HUMAN_MESSAGES_CHANNEL = 'human-messages';
 
 function verifySlackRequest(body: string, timestamp: string, signature: string, secret: string): boolean {
   const fiveMinutes = 5 * 60;
@@ -26,6 +31,13 @@ function verifySlackRequest(body: string, timestamp: string, signature: string, 
   return crypto.timingSafeEqual(Buffer.from(computed), Buffer.from(signature));
 }
 
+function slackResponse(text: string, inChannel = false) {
+  return NextResponse.json({
+    response_type: inChannel ? 'in_channel' : 'ephemeral',
+    text,
+  });
+}
+
 export async function POST(request: NextRequest) {
   const signingSecret = process.env.SLACK_SIGNING_SECRET;
   const agentApiKey = process.env.SLACK_AGENT_API_KEY;
@@ -34,7 +46,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ text: 'Slack integration not configured.' }, { status: 500 });
   }
 
-  // Read and verify the request
   const body = await request.text();
   const timestamp = request.headers.get('x-slack-request-timestamp') || '';
   const signature = request.headers.get('x-slack-signature') || '';
@@ -43,28 +54,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ text: 'Invalid signature.' }, { status: 401 });
   }
 
-  // Parse the Slack slash command payload (URL-encoded form data)
   const params = new URLSearchParams(body);
   const text = params.get('text')?.trim() || '';
   const slackUser = params.get('user_name') || 'slack-user';
 
   if (!text) {
-    return NextResponse.json({
-      response_type: 'ephemeral',
-      text: 'Usage: `/airchat @agent-name your message here`\n\nExample: `/airchat @server-myproject check docker containers`',
-    });
+    return slackResponse(
+      'Usage:\n' +
+      '• `/airchat @agent-name message` — send to an agent\n' +
+      '• `/airchat #channel-name message` — post to a channel\n' +
+      '• `/airchat message` — post to #human-messages\n' +
+      '• `/airchat agents` — list active agents\n' +
+      '• `/airchat channels` — list channels'
+    );
   }
 
-  // Determine channel and content
-  // If the message starts with @agent-name, post to #direct-messages
-  // Otherwise post to #general
-  const mentionMatch = text.match(/^@([a-zA-Z0-9_-]+)\s+([\s\S]+)$/);
-  const channel = mentionMatch ? DIRECT_MESSAGES_CHANNEL : 'general';
-  const content = mentionMatch
-    ? `@${mentionMatch[1]} ${mentionMatch[2]} (via Slack from ${slackUser})`
-    : `${text} (via Slack from ${slackUser})`;
-
-  // Use the agent API key to resolve identity, then post via RPC
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!supabaseUrl || !anonKey) {
@@ -73,8 +77,70 @@ export async function POST(request: NextRequest) {
 
   const agentClient = createAgentClient(supabaseUrl, anonKey, agentApiKey, SLACK_BRIDGE_AGENT);
 
-  // Ensure the slack-bridge agent exists (cached per process)
+  // --- Subcommand: agents ---
+  if (text === 'agents') {
+    const { data, error } = await agentClient
+      .from('agents')
+      .select('name, active, last_seen_at')
+      .order('last_seen_at', { ascending: false, nullsFirst: false });
+
+    if (error || !data) {
+      return slackResponse('Failed to fetch agents.');
+    }
+
+    if (data.length === 0) {
+      return slackResponse('No agents registered yet.');
+    }
+
+    const lines = data.map(a => {
+      const status = a.active ? 'active' : 'inactive';
+      const seen = a.last_seen_at
+        ? `last seen ${new Date(a.last_seen_at).toLocaleDateString()}`
+        : 'never seen';
+      return `• \`${a.name}\` — ${status}, ${seen}`;
+    });
+
+    return slackResponse(`*AirChat Agents (${data.length}):*\n${lines.join('\n')}`);
+  }
+
+  // --- Subcommand: channels ---
+  if (text === 'channels') {
+    const { data, error } = await agentClient
+      .from('channels')
+      .select('name, created_at')
+      .order('created_at', { ascending: false });
+
+    if (error || !data) {
+      return slackResponse('Failed to fetch channels.');
+    }
+
+    if (data.length === 0) {
+      return slackResponse('No channels yet.');
+    }
+
+    const lines = data.map(c => `• \`#${c.name}\``);
+    return slackResponse(`*AirChat Channels (${data.length}):*\n${lines.join('\n')}`);
+  }
+
+  // --- Message routing ---
   await ensureAgentRegistered(SLACK_BRIDGE_AGENT, agentApiKey);
+
+  const mentionMatch = text.match(/^@([a-zA-Z0-9_-]+)\s+([\s\S]+)$/);
+  const channelMatch = text.match(/^#([a-zA-Z0-9_-]+)\s+([\s\S]+)$/);
+
+  let channel: string;
+  let content: string;
+
+  if (mentionMatch) {
+    channel = DIRECT_MESSAGES_CHANNEL;
+    content = `@${mentionMatch[1]} ${mentionMatch[2]} (via Slack from ${slackUser})`;
+  } else if (channelMatch) {
+    channel = channelMatch[1];
+    content = `${channelMatch[2]} (via Slack from ${slackUser})`;
+  } else {
+    channel = HUMAN_MESSAGES_CHANNEL;
+    content = `${text} (via Slack from ${slackUser})`;
+  }
 
   const { error } = await agentClient.rpc('send_message_with_auto_join', {
     channel_name: channel,
@@ -84,17 +150,13 @@ export async function POST(request: NextRequest) {
   });
 
   if (error) {
-    return NextResponse.json({
-      response_type: 'ephemeral',
-      text: 'Failed to send message. Please try again.',
-    });
+    return slackResponse('Failed to send message. Please try again.');
   }
 
-  const target = mentionMatch ? mentionMatch[1] : null;
-  return NextResponse.json({
-    response_type: 'in_channel',
-    text: target
-      ? `Sent to @${target} in #${channel}. They'll be notified on their next prompt.`
+  return slackResponse(
+    mentionMatch
+      ? `Sent to @${mentionMatch[1]} in #${channel}. They'll be notified on their next prompt.`
       : `Posted to #${channel}.`,
-  });
+    true,
+  );
 }

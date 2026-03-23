@@ -89,6 +89,14 @@ export async function ensureAgentRegistered(
 
   await client.rpc('ensure_agent_exists', { p_agent_name: agentName });
   _registeredAgents.add(agentName);
+
+  // Roll call: announce first-time agent to #slack-roll-call (fire-and-forget)
+  client.rpc('send_message_with_auto_join', {
+    channel_name: 'roll-call',
+    content: `@${agentName} has joined AirChat`,
+    parent_message_id: null,
+    message_metadata: { source: 'roll-call' },
+  }).then(() => {}, () => {});
 }
 
 /**
