@@ -20,6 +20,8 @@ import { ensureAgentRegistered } from '@/lib/api-auth';
 const HUMAN_MESSAGES_CHANNEL = 'human-messages';
 
 function verifySlackRequest(body: string, timestamp: string, signature: string, secret: string): boolean {
+  if (!timestamp || !signature) return false;
+
   const fiveMinutes = 5 * 60;
   const now = Math.floor(Date.now() / 1000);
   if (Math.abs(now - parseInt(timestamp)) > fiveMinutes) return false;
@@ -28,7 +30,11 @@ function verifySlackRequest(body: string, timestamp: string, signature: string, 
   const hmac = crypto.createHmac('sha256', secret).update(sigBase).digest('hex');
   const computed = `v0=${hmac}`;
 
-  return crypto.timingSafeEqual(Buffer.from(computed), Buffer.from(signature));
+  const a = Buffer.from(computed);
+  const b = Buffer.from(signature);
+  if (a.length !== b.length) return false;
+
+  return crypto.timingSafeEqual(a, b);
 }
 
 function slackResponse(text: string, inChannel = false) {
